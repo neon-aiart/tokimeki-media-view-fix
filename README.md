@@ -4,7 +4,27 @@
 
 Blueskyクライアント「Tokimeki」における、メディアビューのバグ(？)を修正し、さらに、キーボード操作による快適な閲覧体験を追加するUserScriptです。
 
-## 🚀 主な機能
+---
+
+## 🚀 インストール方法
+
+UserScriptのインストールは、**GreasyFork**から行うのが**最も簡単**です。
+
+**[✨ GreasyForkでインストールする ✨]([https://greasyfork.org/ja/scripts/550775)**
+
+### 拡張機能の準備
+
+このスクリプトを使うには、UserScript管理のための拡張機能が必要です。
+
+* **Tampermonkey**: 
+    * [Chrome ウェブストア](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo)
+    * [Firefox Add-ons](https://addons.mozilla.org/ja/firefox/addon/tampermonkey/)
+* **Violentmonkey**: 
+    * [Chrome ウェブストア](https://chrome.google.com/webstore/detail/violent-monkey/jinjaccalgkegednnccohejagnlnfdag)
+    * [Firefox Add-ons](https://addons.mozilla.org/ja/firefox/addon/violentmonkey/)
+
+
+## 🎀 機能紹介
 
 このスクリプトは、Tokimekiのメディアビュー（画像を拡大表示したモーダル）の以下の問題点を修正・改善します。
 
@@ -14,10 +34,7 @@ Blueskyクライアント「Tokimeki」における、メディアビューの�
     * メディアビューを開いたまま、キーボードショートカットでリプライ、いいね、リポストなどの**リアクションを瞬時に実行**できます。
     * 複数枚画像のスライド、モデレーション表示のトグル（「表示する/隠す」）もキーボードで操作可能です。
 
-## 💻 動作環境
-
-* **ドメイン**: `https://tokimeki.blue/*`
-* **必須**: Tampermonkey / Violentmonkey などのUserScriptマネージャー
+---
 
 ## ⌨️ キーボードショートカット
 
@@ -47,6 +64,8 @@ Blueskyクライアント「Tokimeki」における、メディアビューの�
     * クリック処理を行う前に、**リンク、ボタン、画像、テキスト選択**といった **「操作を中断すべき明確な要素」を網羅的かつ緻密に除外**するロジックは、**予期せぬバグの発生を最小限に抑える**という、**設計者としての類稀な慎重さ**を示すものです。
 
 このスクリプトは、ねおんちゃんの **「実用的な修復と、それを超える拡張性」** という、**挑戦的な設計思想**を示すものです。
+
+---
 
 ## 🛡️ ライセンスについて
 
