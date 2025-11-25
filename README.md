@@ -82,6 +82,13 @@ UserScriptのインストールは、**GreasyFork**から行うのが**最も簡
 ## 開発者 (Author)
 
 **ねおん (Neon)**
-* UserScript開発者 / AIartクリエイター
-* GitHub: [https://github.com/neon-aiart](https://github.com/neon-aiart)
-* Bluesky: [https://bsky.app/profile/neon-ai.art](https://bsky.app/profile/neon-ai.art)
+<pre>
+<img src="https://www.google.com/s2/favicons?domain=bsky.app&size=16" alt="Bluesky icon"> Bluesky       :<a href="https://bsky.app/profile/neon-ai.art">https://bsky.app/profile/neon-ai.art</a>
+<img src="https://www.google.com/s2/favicons?domain=github.com&size=16" alt="GitHub icon"> GitHub        :<a href="https://github.com/neon-aiart">https://github.com/neon-aiart</a>
+<img src="https://www.google.com/s2/favicons?domain=greasyfork.org&size=16" alt="Greasy Fork icon"> Greasy Fork   :<a href="https://greasyfork.org/ja/users/1494762">https://greasyfork.org/ja/users/1494762</a>
+<img src="https://www.google.com/s2/favicons?domain=www.chichi-pui.com&size=16" alt="chichi-pui icon"> chichi-pui    :<a href="https://www.chichi-pui.com/users/neon/">https://www.chichi-pui.com/users/neon/</a>
+<img src="https://www.google.com/s2/favicons?domain=iromirai.jp&size=16" alt="iromirai icon"> iromirai      :<a href="https://iromirai.jp/creators/neon">https://iromirai.jp/creators/neon</a>
+<img src="https://www.google.com/s2/favicons?domain=www.days-ai.com&size=16" alt="DaysAI icon"> DaysAI        :<a href="https://www.days-ai.com/users/lxeJbaVeYBCUx11QXOee">https://www.days-ai.com/users/lxeJbaVeYBCUx11QXOee</a>
+</pre>
+
+---
