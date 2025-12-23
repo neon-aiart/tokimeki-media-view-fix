@@ -1,8 +1,6 @@
-# 🌈 TOKIMEKI メディアスタイル修復 (tokimekiMediaFix)
+# 🌈 Tokimeki MediaView Fix v2.8
 
-**UserScript Version: v2.8**
-
-Blueskyクライアント「Tokimeki」における、メディアビューのバグ(？)を修正し、さらに、キーボード操作による快適な閲覧体験を追加するUserScriptです。
+Blueskyクライアント "Tokimeki" における、メディアビューのバグ(？)を修正し、さらに、キーボード操作による快適な閲覧体験を追加するUserScriptです。
 
 ---
 
