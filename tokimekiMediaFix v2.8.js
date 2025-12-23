@@ -14,6 +14,20 @@
 // @license      CC BY-NC 4.0
 // ==/UserScript==
 
+/**
+ * ==============================================================================
+ * IMPORTANT NOTICE / 重要事項
+ * ==============================================================================
+ * Copyright (c) 2024 ねおん (Neon)
+ * Released under the CC BY-NC 4.0 License.
+ * * [EN] Unauthorized re-uploading, modification of authorship, or removal of 
+ * author credits is strictly prohibited. If you fork this project, you MUST 
+ * retain the original credits.
+ * * [JP] 無断転載、作者名の書き換え、およびクレジットの削除は固く禁じます。
+ * 本スクリプトを改変・配布する場合は、必ず元の作者名（ねおん）を明記してください。
+ * ==============================================================================
+ */
+
 (function() {
     'use strict';
 
