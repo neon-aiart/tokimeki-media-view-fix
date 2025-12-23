@@ -70,6 +70,10 @@ The source code for this application is copyrighted by Neon.
   **No Commercial Use**: Personal use, modification, and non-profit redistribution are permitted. **Please refrain from commercial use.**  
 ※ ご利用は自己責任でお願いします。（悪用できるようなものではないですが、念のため！）
 
+🚨  
+当プロジェクトの無断転載に対し、過去にDMCA Take-down通知を送付し、リポジトリの削除措置が行われています。  
+ライセンスの遵守をお願いします。
+
 ---
 
 ## 開発者 (Author)
