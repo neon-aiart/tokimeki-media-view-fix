@@ -71,8 +71,10 @@ The source code for this application is copyrighted by Neon.
 ※ ご利用は自己責任でお願いします。（悪用できるようなものではないですが、念のため！）
 
 🚨  
-当プロジェクトの無断転載に対し、過去にDMCA Take-down通知を送付し、リポジトリの削除措置が行われています。  
-ライセンスの遵守をお願いします。
+当プロジェクトの無断転載に対し、過去にDMCA Take-down通知を送付しています。  
+ライセンスの遵守をお願いします。  
+We have filed DMCA Take-down notices in the past regarding unauthorized re-uploading of this project.  
+Please ensure compliance with the license.
 
 ---
 
