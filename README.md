@@ -70,11 +70,18 @@ The source code for this application is copyrighted by Neon.
   **No Commercial Use**: Personal use, modification, and non-profit redistribution are permitted. **Please refrain from commercial use.**  
 ※ ご利用は自己責任でお願いします。（悪用できるようなものではないですが、念のため！）
 
-🚨  
+## ⚠️ セキュリティ警告 (Security Warning)
 当プロジェクトの無断転載に対し、過去にDMCA Take-down通知を送付しています。  
 ライセンスの遵守をお願いします。  
 We have filed DMCA Take-down notices in the past regarding unauthorized re-uploading of this project.  
 Please ensure compliance with the license.
+
+🚨 **重要：公式配布は GreasyFork または GitHub 上の `.js` ファイルのみです。**  
+他サイトなどで `.zip`、`.exe`、`.cmd` 形式で配布されているものは**偽物**であり、**ウイルスやマルウェア**が含まれている危険性があります。  
+絶対に使用しないでください。  
+🚨 **IMPORTANT: Official distribution is ONLY via GreasyFork or GitHub as a `.js` file.**  
+If you find this project distributed as a `.zip`, `.exe`, or `.cmd` file on other sites, it is a **FAKE** and may contain **VIRUSES or MALWARE**.  
+Please do not download or execute such files.
 
 ---
 
