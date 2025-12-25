@@ -110,8 +110,10 @@ The source code for this application is copyrighted by Neon.
 
 * **ライセンス**: **[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/deed.ja)** です。（LICENSEファイルをご参照ください。）  
   Licensed under CC BY-NC 4.0. (Please refer to the LICENSE file for details.)
-* **商用利用不可**: 個人での利用や改変、非営利の範囲内での再配布はOKです。**商用目的での利用はご遠慮ください**。  
-  **No Commercial Use**: Personal use, modification, and non-profit redistribution are permitted. **Please refrain from commercial use.**  
+* **商用利用不可**: 個人での利用や改変、非営利の範囲内での再配布はOKです。  
+  **商用目的での利用はご遠慮ください**。  
+  **No Commercial Use**: Personal use, modification, and non-profit redistribution are permitted.  
+  **Please refrain from commercial use.**  
 ※ ご利用は自己責任でお願いします。（悪用できるようなものではないですが、念のため！）
 
 ## ⚠️ セキュリティ警告 (Security Warning)
