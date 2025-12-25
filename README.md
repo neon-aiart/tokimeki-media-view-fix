@@ -1,4 +1,4 @@
-# 🌈 Tokimeki MediaView Fix v3.0
+# 🌈 Tokimeki MediaView Fix Plus v3.0
 
 Blueskyクライアント "Tokimeki" における、メディアビューを修正し、さらに、キーボード操作による快適な閲覧体験を追加するUserScriptです。  
 A UserScript for the Bluesky client "Tokimeki" that fixes the MediaView and enhances the browsing experience with keyboard-driven interactions.
