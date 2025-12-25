@@ -1,17 +1,19 @@
 // ==UserScript==
-// @name         TOKIMEKI メディアスタイル修復
-// @namespace    https://bsky.app/profile/neon-ai.art
-// @homepage     https://bsky.app/profile/neon-ai.art
-// @icon         data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌈</text></svg>
-// @version      2.8
-// @description  TOKIMEKIの「メディア」スタイルで投稿の本文や引用元をクリックした際に、その投稿の個別ページに移動できるようにします。また、キーボードショートカットでリアクション操作ができるようになります。
-// @author       ねおん
-// @match        https://tokimeki.blue/*
-// @grant        GM_getValue
-// @grant        GM_setValue
-// @grant        GM_registerMenuCommand
-// @grant        GM_unregisterMenuCommand
-// @license      CC BY-NC 4.0
+// @name           Tokimeki MediaView Fix Plus
+// @icon           data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌈</text></svg>
+// @version        3.0
+// @description    Enables navigating to individual post pages by clicking on the body or quote source in TOKIMEKI's "Media" style. Also adds keyboard shortcuts for reactions.
+// @description:ja TOKIMEKIの「メディア」スタイルで投稿の本文や引用元をクリックした際に、その投稿の個別ページに移動できるようにします。また、キーボードショートカットでリアクション操作ができるようになります。
+// @author         ねおん
+// @namespace      https://bsky.app/profile/neon-ai.art
+// @homepage       https://neon-aiart.github.io/
+// @match          https://tokimeki.blue/*
+// @match          https://tokimekibluesky.vercel.app/*
+// @grant          GM_getValue
+// @grant          GM_setValue
+// @grant          GM_registerMenuCommand
+// @grant          GM_unregisterMenuCommand
+// @license        CC BY-NC 4.0
 // ==/UserScript==
 
 /**
@@ -20,8 +22,8 @@
  * ==============================================================================
  * Copyright (c) 2024 ねおん (Neon)
  * Released under the CC BY-NC 4.0 License.
- * * [EN] Unauthorized re-uploading, modification of authorship, or removal of 
- * author credits is strictly prohibited. If you fork this project, you MUST 
+ * * [EN] Unauthorized re-uploading, modification of authorship, or removal of
+ * author credits is strictly prohibited. If you fork this project, you MUST
  * retain the original credits.
  * * [JP] 無断転載、作者名の書き換え、およびクレジットの削除は固く禁じます。
  * 本スクリプトを改変・配布する場合は、必ず元の作者名（ねおん）を明記してください。
@@ -31,7 +33,7 @@
 (function() {
     'use strict';
 
-    const VERSION = 'v2.8';
+    const VERSION = '3.0';
     const STORE_KEY = 'tokimeki_media_fix_shortcuts';
 
     // ========= 設定 =========
@@ -98,33 +100,82 @@
             return;
         }
 
-        // 押されたキーに一致するアクションを探す
-        const action = Object.keys(shortcuts).find(key => e.code === shortcuts[key]);
+        // 保存時と同じルールで「今押されたキー文字列」を作成
+        const modifiers = [];
+        if (e.ctrlKey) modifiers.push('Ctrl');
+        if (e.shiftKey) modifiers.push('Shift');
+        if (e.altKey) modifiers.push('Alt');
 
-        // 複数画像操作（↑・↓）
-        if (e.code === 'ArrowUp' || e.code === 'ArrowDown') {
+        if (['Control', 'Shift', 'Alt', 'Meta'].includes(e.key)) return;
+
+        // キー名の正規化（矢印キー以外は左右の区別を消す）
+        let keyName = e.code;
+        if (!keyName.startsWith('Arrow')) {
+            keyName = keyName.replace('Left', '').replace('Right', '');
+        }
+        keyName = keyName.replace('Key', '').replace('Digit', '');
+        if (keyName === 'Escape') keyName = 'Esc';
+        if (keyName === 'Backspace') keyName = 'BS';
+
+        const finalKeys = [...new Set([...modifiers, keyName])];
+        const currentPressedKey = finalKeys.join('+');
+
+        // 押されたキーに一致するアクションを探す
+        let action = Object.keys(shortcuts).find(key => currentPressedKey === shortcuts[key]);
+        let isParentOperation = false;
+
+        // Ctrl+押されたキーで設定があるか探し直す
+        if (!action && currentPressedKey.startsWith('Ctrl+')) {
+            const baseKey = currentPressedKey.replace('Ctrl+', '');
+            action = Object.keys(shortcuts).find(key => shortcuts[key] === baseKey);
+            if (action) isParentOperation = true;
+        }
+
+        // 複数画像操作（Shift + ArrowLeft/Right）
+        if (currentPressedKey === 'Shift+ArrowLeft' || currentPressedKey === 'Shift+ArrowRight') {
             e.preventDefault();
             e.stopPropagation();
 
             // emblaコンポーネント（画像スライドショー全体）をダイアログ内から探す
             const emblaContainer = dialog.querySelector('.embla');
-
             if (emblaContainer) {
                 let targetButton = null;
 
-                if (e.code === 'ArrowUp') {
+                if (currentPressedKey === 'Shift+ArrowLeft') {
                     targetButton = emblaContainer.querySelector('.embla__prev');
-                } else if (e.code === 'ArrowDown') {
+                } else if (currentPressedKey === 'Shift+ArrowRight') {
                     targetButton = emblaContainer.querySelector('.embla__next');
                 }
 
                 if (targetButton) {
                     targetButton.click();
-
                     targetButton.style.transform = 'scale(1.2)';
                     setTimeout(() => {
                         targetButton.style.transform = '';
                     }, 150);
+                    return;
+                }
+            }
+        }
+
+        // 本文のスクロール操作（ArrowUp/Down）
+        if (currentPressedKey === 'ArrowUp' || currentPressedKey === 'ArrowDown') {
+            // .media-contentを探す
+            const scrollTarget = dialog.querySelector('.media-content');
+
+            if (scrollTarget) {
+                // はみ出している（スクロールバーがある）場合のみ独自処理
+                if (scrollTarget.scrollHeight > scrollTarget.clientHeight) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const scrollAmount = 40; // 1回のスクロール量（px）
+                    const direction = (currentPressedKey === 'ArrowUp') ? -1 : 1;
+
+                    scrollTarget.scrollBy({
+                        top: scrollAmount * direction,
+                        behavior: 'smooth'
+                    });
                     return;
                 }
             }
@@ -179,7 +230,11 @@
         // リアクション操作
         const reactionAreas = contentArea.querySelectorAll('.timeline-reaction');
         if (reactionAreas.length === 0) return;
-        const reactionArea = reactionAreas[reactionAreas.length - 1]; // 一番最後の要素がターゲットです✨
+
+        // --- ターゲットにするAreaを決定 ---
+        const reactionArea = (isParentOperation && reactionAreas.length > 1)
+            ? reactionAreas[0]                         // 親ポスト
+            : reactionAreas[reactionAreas.length - 1]; // 通常（子ポスト）
 
         let button;
         switch (action) {
@@ -224,7 +279,7 @@
         .tmf-close { background: none; border: none; cursor: pointer; font-size: 24px; color: var(--tmf-text-color); opacity: 0.7; padding: 0; }
         .tmf-close:hover { opacity: 1; }
         .tmf-section { padding: 20px; }
-        .tmf-shortcut-grid { display: grid; grid-template-columns: 150px 1fr; gap: 15px; align-items: center; }
+        .tmf-shortcut-grid { display: grid; grid-template-columns: max-content 1fr; gap: 15px; align-items: center; }
         .tmf-label { font-size: 1rem; font-weight: 500; color: #e0e0e0; display: flex; align-items: center; gap: 8px; }
         .tmf-label svg { width: 20px; height: 20px; stroke: var(--tmf-text-color); }
         .tmf-input { width: 100%; padding: 8px 12px; background-color: var(--tmf-secondary-color); color: var(--tmf-text-color); border: 1px solid var(--tmf-border-color); border-radius: 6px; cursor: text; box-sizing: border-box; text-align: center; }
@@ -259,6 +314,11 @@
         ensureStyle();
         if (document.querySelector('.tmf-overlay')) return;
 
+        // メディアビューのダイアログが開いているか確認
+        const activeDialog = document.querySelector('dialog.media-content-wrap[open]');
+
+        const targetParent = activeDialog ? activeDialog : document.body;
+
         const overlay = document.createElement('div');
         overlay.className = 'tmf-overlay';
         overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
@@ -267,19 +327,19 @@
         panel.className = 'tmf-panel';
 
         panel.innerHTML = `
-            <div class="tmf-title"><span>キー設定</span><button class="tmf-close">&times;</button></div>
+            <div class="tmf-title"><span>キー設定 (Shortcut Settings)</span><button class="tmf-close">&times;</button></div>
             <div class="tmf-section"><div class="tmf-shortcut-grid">
-                <label class="tmf-label" for="tmf-reply"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"></path></svg><span>コメント</span></label><input type="text" id="tmf-reply" class="tmf-input" readonly>
-                <label class="tmf-label" for="tmf-repost"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg><span>リポスト</span></label><input type="text" id="tmf-repost" class="tmf-input" readonly>
-                <label class="tmf-label" for="tmf-like"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"></path></svg><span>いいね</span></label><input type="text" id="tmf-like" class="tmf-input" readonly>
-                <label class="tmf-label" for="tmf-quote"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path></svg><span>引用</span></label><input type="text" id="tmf-quote" class="tmf-input" readonly>
-                <label class="tmf-label" for="tmf-bookmark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg><span>ブックマーク</span></label><input type="text" id="tmf-bookmark" class="tmf-input" readonly>
-                <label class="tmf-label" for="tmf-moderation"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg><span>モデレーション</span></label><input type="text" id="tmf-moderation" class="tmf-input" readonly>
+                <label class="tmf-label" for="tmf-reply"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"></path></svg><span>コメント (Reply)</span></label><input type="text" id="tmf-reply" class="tmf-input" readonly>
+                <label class="tmf-label" for="tmf-repost"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg><span>リポスト (Repost)</span></label><input type="text" id="tmf-repost" class="tmf-input" readonly>
+                <label class="tmf-label" for="tmf-like"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"></path></svg><span>いいね (Like)</span></label><input type="text" id="tmf-like" class="tmf-input" readonly>
+                <label class="tmf-label" for="tmf-quote"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path></svg><span>引用 (Quote)</span></label><input type="text" id="tmf-quote" class="tmf-input" readonly>
+                <label class="tmf-label" for="tmf-bookmark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg><span>ブックマーク (Bookmark)</span></label><input type="text" id="tmf-bookmark" class="tmf-input" readonly>
+                <label class="tmf-label" for="tmf-moderation"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg><span>モデレーション (Moderation)</span></label><input type="text" id="tmf-moderation" class="tmf-input" readonly>
             </div></div>
-            <div class="tmf-bottom"><span class="tmf-version">(${VERSION})</span><button class="tmf-button">保存</button></div>
+            <div class="tmf-bottom"><span class="tmf-version">(v${VERSION})</span><button class="tmf-button">保存 (Save)</button></div>
         `;
         overlay.appendChild(panel);
-        document.body.appendChild(overlay);
+        targetParent.appendChild(overlay);
 
         const inputs = Object.fromEntries(
             Array.from(panel.querySelectorAll('.tmf-input')).map(input => [input.id.replace('tmf-', ''), input])
@@ -296,43 +356,71 @@
             e.preventDefault();
             e.stopPropagation();
 
-            // 全角入力チェック
-            if (e.key.length > 1 && e.key !== 'Backspace' && e.key !== 'Delete' && !/F\d+/.test(e.key) ) {
-                if (/[^ -~]/.test(e.key)) { // 半角ASCII文字以外
-                     showToast('全角や修飾キーのみの入力はできません！', true);
-                     return;
-                }
-            }
+            // 1. 修飾キー（Ctrl, Shift, Alt）の状態を配列に集める
+            const modifiers = [];
+            if (e.ctrlKey) modifiers.push('Ctrl');
+            if (e.shiftKey) modifiers.push('Shift');
+            if (e.altKey) modifiers.push('Alt');
 
-            // 他で使われてるキーかチェック
-            const newCode = e.code;
-            const otherInputs = Object.entries(inputs).filter(([act,]) => act !== action);
-            if (otherInputs.some(([, inp]) => inp.value === newCode && !inp.classList.contains('recording'))) {
-                inputs[action].classList.add('error');
-                showToast('そのキーは他のアクションで使われています！', true);
+            // 2. 現在押されたメインのキーを特定する
+            // 修飾キーそのものが押されたときは、まだ確定させない
+            if (['Control', 'Shift', 'Alt', 'Meta'].includes(e.key)) {
+                // 修飾キー単体での表示更新（任意ですが、入力中っぽく見せるなら）
+                inputs[action].value = modifiers.join('+');
                 return;
             }
 
-            inputs[action].value = newCode;
+            // 3. メインキーの名前を整形（左右の区別を消し、1文字なら大文字に）
+            let keyName = e.code;
+            keyName = keyName.replace('Key', '');    // KeyA -> A
+            keyName = keyName.replace('Digit', '');  // Digit1 -> 1
+            keyName = keyName.replace('Left', '');   // AltLeft -> Alt
+            keyName = keyName.replace('Right', '');  // ShiftRight -> Shift
+
+            // 特殊なキーの微調整（お好みで）
+            if (keyName === 'Escape') keyName = 'Esc';
+            if (keyName === 'Backspace') keyName = 'BS';
+
+            // 4. 修飾キーとメインキーを合体させる
+            // すでに modifiers に含まれているキー（Altなど）がメインキーとして来た場合は重複させない
+            if (!modifiers.includes(keyName)) {
+                modifiers.push(keyName);
+            }
+
+            const fullKeyString = modifiers.join('+');
+
+            // 5. 重複チェック
+            const otherInputs = Object.entries(inputs).filter(([act,]) => act !== action);
+            if (otherInputs.some(([, inp]) => inp.value === fullKeyString && !inp.classList.contains('recording'))) {
+                inputs[action].classList.add('error');
+                showToast('既に使われています (Already in use)', true);
+                return;
+            }
+
+            // 6. 確定
+            inputs[action].value = fullKeyString;
             inputs[action].classList.remove('recording', 'error');
             activeInput = null;
         };
 
+        const handleInputClick = (e) => {
+            const input = e.currentTarget; // クリックされた要素を取得
+            if (activeInput === input) {
+                input.classList.remove('recording');
+                activeInput = null;
+                return;
+            }
+            if (activeInput) activeInput.classList.remove('recording', 'error');
+
+            activeInput = input;
+            // input.value = 'キーを押してください... (Press a key...)';
+            input.classList.add('recording');
+            input.classList.remove('error');
+        };
+
         for (const action in inputs) {
             const input = inputs[action];
-            input.addEventListener('click', () => {
-                if (activeInput === input) {
-                    input.classList.remove('recording');
-                    activeInput = null;
-                    return;
-                }
-                if(activeInput) activeInput.classList.remove('recording', 'error');
-
-                activeInput = input;
-                input.value = 'キーを押してください...';
-                input.classList.add('recording');
-                input.classList.remove('error');
-            });
+            input.addEventListener('click', handleInputClick); // ここで関数を使い回す
             input.addEventListener('keydown', (e) => recordKey(e, action));
         }
 
@@ -340,25 +428,48 @@
         panel.querySelector('.tmf-button').addEventListener('click', () => {
             const newShortcuts = {};
             let hasError = false;
+
+            // 予約済み（設定不可）キーのリスト
+            const reservedKeys = [
+                'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+                'Shift+ArrowLeft', 'Shift+ArrowRight'
+            ];
+
             for (const action in inputs) {
                 const val = inputs[action].value;
-                if (!val || val.includes('...')) {
-                    showToast(`${action} のキーが設定されていません！`, true);
+
+                // 1. 不完全なキー（末尾が+、または装飾キーのみ）
+                const isIncomplete = !val || val.endsWith('+') || /^(Ctrl|Shift|Alt)(\+(Ctrl|Shift|Alt))*$/.test(val);
+
+                // 2. 予約済みキーかどうか
+                const isReserved = reservedKeys.includes(val);
+
+                if (isIncomplete) {
+                    showToast(`キー設定が不完全です ( Incomplete key): ${action}`, true);
+                    inputs[action].classList.add('error'); // エラー箇所を赤くする
                     hasError = true;
                     break;
                 }
+
+                if (isReserved) {
+                    showToast(`このキーは予約済みで設定できません (Reserved key): ${val}`, true);
+                    inputs[action].classList.add('error');
+                    hasError = true;
+                    break;
+                }
+
                 newShortcuts[action] = val;
             }
 
             if (!hasError) {
                 shortcuts = newShortcuts;
                 GM_setValue(STORE_KEY, shortcuts);
-                showToast('設定を保存しました！');
+                showToast('設定を保存しました (Settings saved)');
                 overlay.remove();
             }
         });
     }
 
-    GM_registerMenuCommand('キー設定', openSettings);
+    GM_registerMenuCommand('キー設定 (Shortcut Settings)', openSettings);
 
 })();
