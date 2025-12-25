@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Tokimeki MediaView Fix Plus
 // @icon           data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌈</text></svg>
-// @version        3.0
+// @version        3.1
 // @description    Enables navigating to individual post pages by clicking on the body or quote source in TOKIMEKI's "Media" style. Also adds keyboard shortcuts for reactions.
 // @description:ja TOKIMEKIの「メディア」スタイルで投稿の本文や引用元をクリックした際に、その投稿の個別ページに移動できるようにします。また、キーボードショートカットでリアクション操作ができるようになります。
 // @author         ねおん
@@ -33,7 +33,7 @@
 (function() {
     'use strict';
 
-    const VERSION = '3.0';
+    const VERSION = '3.1';
     const STORE_KEY = 'tokimeki_media_fix_shortcuts';
 
     // ========= 設定 =========
@@ -289,6 +289,28 @@
         .tmf-bottom .tmf-version { font-size: 0.8rem; font-weight: 400; color: #aaa; }
         .tmf-button { padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; background-color: var(--tmf-primary-color); color: white; }
         .tmf-button:hover { background-color: var(--tmf-primary-hover); }
+        /* 説明ボックスのスタイル */
+        .tmf-info-box {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--tmf-border-color);
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #bbb;
+        }
+        .tmf-info-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        .tmf-info-key {
+            background: var(--tmf-secondary-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: var(--tmf-primary-color);
+            font-family: monospace;
+            font-weight: bold;
+        }
         `;
         document.head.appendChild(style);
     }
@@ -328,15 +350,35 @@
 
         panel.innerHTML = `
             <div class="tmf-title"><span>キー設定 (Shortcut Settings)</span><button class="tmf-close">&times;</button></div>
-            <div class="tmf-section"><div class="tmf-shortcut-grid">
-                <label class="tmf-label" for="tmf-reply"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"></path></svg><span>コメント (Reply)</span></label><input type="text" id="tmf-reply" class="tmf-input" readonly>
-                <label class="tmf-label" for="tmf-repost"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg><span>リポスト (Repost)</span></label><input type="text" id="tmf-repost" class="tmf-input" readonly>
-                <label class="tmf-label" for="tmf-like"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"></path></svg><span>いいね (Like)</span></label><input type="text" id="tmf-like" class="tmf-input" readonly>
-                <label class="tmf-label" for="tmf-quote"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path></svg><span>引用 (Quote)</span></label><input type="text" id="tmf-quote" class="tmf-input" readonly>
-                <label class="tmf-label" for="tmf-bookmark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg><span>ブックマーク (Bookmark)</span></label><input type="text" id="tmf-bookmark" class="tmf-input" readonly>
-                <label class="tmf-label" for="tmf-moderation"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg><span>モデレーション (Moderation)</span></label><input type="text" id="tmf-moderation" class="tmf-input" readonly>
-            </div></div>
-            <div class="tmf-bottom"><span class="tmf-version">(v${VERSION})</span><button class="tmf-button">保存 (Save)</button></div>
+            <div class="tmf-section">
+                <div class="tmf-shortcut-grid">
+                    <label class="tmf-label" for="tmf-reply"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"></path></svg><span>コメント (Reply)</span></label><input type="text" id="tmf-reply" class="tmf-input" readonly>
+                    <label class="tmf-label" for="tmf-repost"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m17 2 4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="m7 22-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg><span>リポスト (Repost)</span></label><input type="text" id="tmf-repost" class="tmf-input" readonly>
+                    <label class="tmf-label" for="tmf-like"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"></path></svg><span>いいね (Like)</span></label><input type="text" id="tmf-like" class="tmf-input" readonly>
+                    <label class="tmf-label" for="tmf-quote"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path></svg><span>引用 (Quote)</span></label><input type="text" id="tmf-quote" class="tmf-input" readonly>
+                    <label class="tmf-label" for="tmf-bookmark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg><span>ブックマーク (Bookmark)</span></label><input type="text" id="tmf-bookmark" class="tmf-input" readonly>
+                    <label class="tmf-label" for="tmf-moderation"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg><span>モデレーション (Moderation)</span></label><input type="text" id="tmf-moderation" class="tmf-input" readonly>
+                </div>
+
+                <div class="tmf-info-box">
+                    <div class="tmf-info-item">
+                        <span>親ポストへの操作 / Parent Post</span>
+                        <span class="tmf-info-key">Ctrl + Key</span>
+                    </div>
+                    <div class="tmf-info-item">
+                        <span>画像切り替え / Next-Prev Image</span>
+                        <span class="tmf-info-key">Shift + ← / →</span>
+                    </div>
+                    <div class="tmf-info-item">
+                        <span>本文のスクロール / Scroll Text</span>
+                        <span class="tmf-info-key">↑ / ↓</span>
+                    </div>
+                </div>
+            </div>
+            <div class="tmf-bottom">
+                <span class="tmf-version">(v${VERSION})</span>
+                <button class="tmf-button">保存 (Save)</button>
+            </div>
         `;
         overlay.appendChild(panel);
         targetParent.appendChild(overlay);
