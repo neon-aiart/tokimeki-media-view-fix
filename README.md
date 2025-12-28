@@ -1,7 +1,7 @@
-# 🌈 Tokimeki MediaView Fix Plus v3.5
+# 🌈 Tokimeki MediaView Fix Plus v3.6
 
-Blueskyクライアント "Tokimeki" における、メディアビューの修正に加え、**通知欄での画像・動画プレビュー機能**、そしてキーボード操作による快適な閲覧体験を追加する強力なUserScriptです。  
-A powerful UserScript for the Bluesky client "Tokimeki" that fixes MediaView, **adds media previews to the notification column**, and enhances the experience with keyboard-driven interactions.
+Blueskyクライアント "Tokimeki" における、メディアビューの修正に加え、**通知カラムでの画像・動画プレビュー機能**、そしてキーボード操作による快適な閲覧体験を追加する強力なUserScriptです。  
+A powerful UserScript for the Bluesky client "Tokimeki" that fixes MediaView, *adds image, video, and link card previews to the notification column**, and enhances the experience with keyboard-driven interactions.
 
 ---
 
@@ -20,9 +20,9 @@ This script fixes and improves the following issues in Tokimeki's MediaView (the
       You can **instantly perform reactions** like Reply, Like, and Repost using keyboard shortcuts without closing the MediaView.
     * 複数枚画像のスライド、本文のスクロール、モデレーション表示のトグル「表示する/隠す」もキーボードで操作可能です。  
       You can also use the keyboard to slide through multiple images, scroll through long post text, and toggle the moderation display (Show/Hide).
-3. 🔔 **通知欄のメディアプレビュー (New! v3.5～) / Notification Media Preview**:
-    * Tokimekiの通知欄では通常表示されない、**引用リポストに含まれる画像、GIFステッカー、動画（m3u8）** を、通知カード内に直接表示します。  
-      Displays **images, GIF stickers, and videos (m3u8) contained within quoted posts**, which are normally hidden in Tokimeki's notification column.
+3. 🔔 **通知カラムのメディアプレビュー (🆕 v3.5～) / Notification Media Preview**:
+    * Tokimekiの通知欄では通常表示されない、**リンクカード、および引用リポストに含まれる画像・GIFステッカー・動画（m3u8）** を、通知カラム内に直接表示します。  
+      Directly displays **link cards, as well as media within quoted posts (images, GIF stickers, and m3u8 videos),** in the notification card, which are not normally shown in Tokimeki's notification column.
 
 
 ---
@@ -71,9 +71,13 @@ These are only active while the MediaView is open.
 
 ## 📝 更新履歴 (Changelog)
 
-### v3.5 (Current Release)
+### v3.6 (Current Release)
 
-* ✅ **通知欄の引用リポストのメディア表示機能を実装**: 画像、GIF、動画が通知カード内でプレビュー可能に。
+* ✅ **リンクカードのサムネイルプレビューを実装**: 通知カラムのリンクカードが含まれるポストのサムネイルを表示。
+
+### v3.5
+
+* ✅ **通知カラムの引用リポストのメディアプレビューを実装**: 画像、GIF、動画が通知カラム内でプレビュー可能に。
 
 ### v3.1
 * ☑️ 設定UIに「親ポストへの操作」「画像切り替え」「本文のスクロール」の情報を追加。
