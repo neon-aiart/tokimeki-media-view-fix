@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Tokimeki MediaView Fix Plus
 // @icon           data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌈</text></svg>
-// @version        3.5
+// @version        3.6
 // @description    Enables navigating to individual post pages by clicking on the body or quote source in TOKIMEKI's "Media" style. Also adds keyboard shortcuts for reactions.
 // @description:ja TOKIMEKIの「メディア」スタイルで投稿の本文や引用元をクリックした際に、その投稿の個別ページに移動できるようにします。また、キーボードショートカットでリアクション操作ができるようになります。
 // @author         ねおん
@@ -36,7 +36,7 @@
 (function() {
     'use strict';
 
-    const VERSION = '3.5';
+    const VERSION = '3.6';
     const STORE_KEY = 'tokimeki_media_fix_shortcuts';
 
     // ========= 設定 =========
@@ -537,36 +537,34 @@
     function findMedia(obj) {
         if (!obj) return null;
 
-        // 1. 画像 (Standard Images)
+        // 画像
         if (obj.images && Array.isArray(obj.images)) {
             return { type: 'images', data: obj.images };
         }
 
-        // 2. 動画 (Video View)
+        // 動画
         if (obj.$type === 'app.bsky.embed.video#view' || obj.video) {
             const videoData = obj.video || obj;
             return {
                 type: 'video',
-                data: [{
-                    thumb: videoData.thumbnail,
-                    video: videoData.playlist
-                }]
+                data: [{ thumb: videoData.thumbnail, video: videoData.playlist }]
             };
         }
 
-        // 3. GIF (External Tenor)
+        // GIFステッカーと外部リンク
         const external = obj.external || (obj.media && obj.media.external);
-        if (external && (external.thumb || external.uri?.includes('tenor.com'))) {
-            return {
-                type: 'gif',
-                data: [{
-                    thumb: external.thumb,
-                    video: external.uri.replace('.gif', '.mp4')
-                }]
-            };
+        if (external) {
+            // Tenor (GIF)
+            if (external.uri?.includes('tenor.com')) {
+                return {
+                    type: 'gif',
+                    data: [{ thumb: external.thumb, video: external.uri.replace('.gif', '.mp4') }]
+                };
+            }
+            return { type: 'external', data: [external] }; // 一般的なリンクカード
         }
 
-        // 4. 引用リポストなどを再帰的に掘る
+        // 再帰探索
         if (obj.media) return findMedia(obj.media);
         if (obj.record) {
             if (obj.record.embed) return findMedia(obj.record.embed);
@@ -651,6 +649,67 @@
                     container.appendChild(imgBox);
                 });
                 wrapper.appendChild(container);
+            } else if (result.type === 'external') {
+                //  外部リンクカード
+                const ext = result.data[0];
+
+                // URLの処理：bsky.app なら tokimeki.blue に変換し、ターゲットを切り替え
+                const isBsky = ext.uri.includes('bsky.app');
+                const targetUrl = isBsky ? ext.uri.replace('bsky.app', 'tokimeki.blue') : ext.uri;
+                const targetAttr = isBsky ? '_self' : '_blank';
+
+                const container = document.createElement('div');
+                container.style.cssText = 'display: flex; flex-direction: column; border: 1px solid var(--border-color-1); border-radius: 8px; overflow: hidden; background: var(--bg-color-2); width: 100%; box-sizing: border-box;';
+
+                // 1. サムネイル部分
+                if (ext.thumb) {
+                    const thumbDiv = document.createElement('div');
+                    thumbDiv.style.cssText = 'width: 100%; aspect-ratio: 16 / 9; overflow: hidden; background: #000; cursor: pointer;';
+                    // クリックでURLを開く
+                    thumbDiv.onclick = () => window.open(targetUrl, targetAttr);
+
+                    const img = document.createElement('img');
+                    img.src = ext.thumb;
+                    img.style.cssText = 'width: 100%; height: 100%; object-fit: cover; object-position: center; display: block;';
+                    thumbDiv.appendChild(img);
+                    container.appendChild(thumbDiv);
+                }
+
+                // 2. テキスト部分
+                const textDiv = document.createElement('div');
+                textDiv.style.cssText = 'padding: 10px; font-size: 13px; border-top: 1px solid var(--border-color-1);';
+
+                // タイトルリンクの作成
+                const titleWrapper = document.createElement('div');
+                titleWrapper.style.cssText = 'font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;';
+
+                const titleLink = document.createElement('a');
+                titleLink.href = targetUrl;
+                titleLink.target = targetAttr;
+                titleLink.textContent = ext.title || 'Link';
+                titleLink.style.cssText = 'text-decoration: none; color: var(--text-color-1); transition: text-decoration 0.2s;';
+
+                // 本家風：マウスが乗ったらアンダーライン
+                titleLink.onmouseover = () => {
+                    titleLink.style.textDecoration = 'underline';
+                }
+                titleLink.onmouseout = () => {
+                    titleLink.style.textDecoration = 'none';
+                }
+
+                titleWrapper.appendChild(titleLink);
+                textDiv.appendChild(titleWrapper);
+
+                // 説明文
+                if (ext.description) {
+                    const descDiv = document.createElement('div');
+                    descDiv.style.cssText = 'color: var(--text-color-3); font-size: 12px; margin-top: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;';
+                    descDiv.textContent = ext.description;
+                    textDiv.appendChild(descDiv);
+                }
+
+                container.appendChild(textDiv);
+                wrapper.appendChild(container);
             } else {
                 wrapper.className = 'notifications-item-images svelte-68xwnf timeline-external--normal svelte-1mlxd9t timeline-external--tenor';
 
@@ -723,7 +782,7 @@
             if (textContent) {
                 textContent.after(wrapper);
             } else {
-                contentArea.appendChild(wrapper);
+                item.querySelector('.notification-column__content')?.appendChild(wrapper);
             }
 
         } catch (e) {
