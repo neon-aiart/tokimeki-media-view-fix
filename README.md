@@ -1,7 +1,7 @@
-# 🌈 Tokimeki MediaView Fix Plus v3.1
+# 🌈 Tokimeki MediaView Fix Plus v3.5
 
-Blueskyクライアント "Tokimeki" における、メディアビューを修正し、さらに、キーボード操作による快適な閲覧体験を追加するUserScriptです。  
-A UserScript for the Bluesky client "Tokimeki" that fixes the MediaView and enhances the browsing experience with keyboard-driven interactions.
+Blueskyクライアント "Tokimeki" における、メディアビューの修正に加え、**通知欄での画像・動画プレビュー機能**、そしてキーボード操作による快適な閲覧体験を追加する強力なUserScriptです。  
+A powerful UserScript for the Bluesky client "Tokimeki" that fixes MediaView, **adds media previews to the notification column**, and enhances the experience with keyboard-driven interactions.
 
 ---
 
@@ -10,16 +10,20 @@ A UserScript for the Bluesky client "Tokimeki" that fixes the MediaView and enha
 このスクリプトは、Tokimekiのメディアビュー（画像を拡大表示したモーダル）の以下の問題点を修正・改善します。  
 This script fixes and improves the following issues in Tokimeki's MediaView (the modal for enlarged images).
 
-1.  **メディアビュー内のクリック修復 / Click Navigation Fix**:
+1.  🖼️ **メディアビュー内のクリック修復 / Click Navigation Fix**:
     * Tokimekiのメディアビューでは、投稿本文をクリックしてもノーマルビュー（詳細画面）に遷移しません。  
       このスクリプトは、投稿本文エリアのどこをクリックしても、その投稿の詳細ページに**瞬時に遷移**するように修復します。  
       In Tokimeki's default MediaView, clicking on the post body does not navigate you to the post's detail page.  
       This script fixes that, allowing you to instantly navigate to the detail view by clicking anywhere within the post content area.
-2.  **キーボード操作による劇的なUX向上 / Drastic UX Improvement via Keyboard Shortcuts**:
+2.  ⌨️ **キーボード操作による劇的なUX向上 / Drastic UX Improvement via Keyboard Shortcuts**:
     * メディアビューを開いたまま、キーボードショートカットでリプライ、いいね、リポストなどの**リアクションを瞬時に実行**できます。  
       You can **instantly perform reactions** like Reply, Like, and Repost using keyboard shortcuts without closing the MediaView.
     * 複数枚画像のスライド、本文のスクロール、モデレーション表示のトグル「表示する/隠す」もキーボードで操作可能です。  
       You can also use the keyboard to slide through multiple images, scroll through long post text, and toggle the moderation display (Show/Hide).
+3. 🔔 **通知欄のメディアプレビュー (New! v3.5) / Notification Media Preview**:
+    * Tokimekiの通知欄では通常表示されない、**引用リポストに含まれる画像、GIFステッカー、動画（m3u8）** を、通知カード内に直接表示します。  
+      Displays **images, GIF stickers, and videos (m3u8) contained within quoted posts**, which are normally hidden in Tokimeki's notification column.
+
 
 ---
 
@@ -28,54 +32,50 @@ This script fixes and improves the following issues in Tokimeki's MediaView (the
 メディアビューが開いているときのみ有効です。  
 These are only active while the MediaView is open.
 
-| アクション<br>Action | デフォルトキー<br>Default Key | 説明<br>Description |
-| :--- | :--- | :--- |
-| **リプライ**<br>Reply | **Numpad1** | 返信用モーダルを開く。<br>Open reply modal. |
-| **リポスト**<br>Repost | **Numpad2** | リポストを実行。<br>Perform a Repost. |
-| **いいね**<br>Like | **Numpad3** | いいねの登録・解除。<br>Toggle Like. |
-| **引用**<br>Quote | **Numpad4** | 引用投稿画面を開く。<br>Open quote post composer. |
-| **ブックマーク**<br>Bookmark | **Numpad5** | ブックマークの登録・解除。<br>Toggle Bookmark. |
-| **モデレーション**<br>Toggle Moderation | **Numpad6** | 警告などで隠された画像を表示/非表示。<br>Show or Hide blurred images. |
-| **画像を次へ/前へ**<br>Next / Prev Image | **Shift + ← / →** | 複数枚画像のスライドショー操作。<br>Slide through multiple images. |
-| **本文のスクロール**<br>Scroll Text | **↑ / ↓** | 本文をスクロールする。<br>Scroll through long post text. |
+### ⚙️ カスタマイズ可能な操作 / Customizable Keys
+
+（設定画面からお好みのキーに変更できます / Can be changed in settings）
+
+- **[Numpad 1]** : 💬 **リプライ (Reply)**
+    - 返信用モーダルを開く / Open reply modal.
+- **[Numpad 2]** : 🔁 **リポスト (Repost)**
+    - リポストを実行 / Perform a Repost.
+- **[Numpad 3]** : ❤️ **いいね (Like)**
+    - いいねの登録・解除 / Toggle Like.
+- **[Numpad 4]** : ✉️ **引用 (Quote)**
+    - 引用投稿画面を開く / Open quote post composer.
+- **[Numpad 5]** : 🔖 **ブックマーク (Bookmark)**
+    - ブックマークの登録・解除 / Toggle Bookmark.
+- **[Numpad 6]** : ✋🏻 **モデレーション (Moderation)**
+    - 警告などで隠された画像を表示・非表示 / Show or Hide blurred images.
+
+### 🔒 固定の操作 / Fixed System Keys
+
+（システム予約のため変更できません / Reserved system shortcuts）
+
+- **[Shift + ← / →]** : 🖼️ **画像を次へ/前へ (Next / Prev Image)**
+    - 複数枚画像のスライドショー操作 / Slide through multiple images.
+- **[↑ / ↓]** : 📜 **本文のスクロール (Scroll Text)**
+    - 長い本文を上下にスクロール / Scroll through long post text.
 
 ### 💡 特殊操作 / Special Controls
 
 * **親ポストへのリアクション / Reactions to Parent Post**:
   * `Ctrl` + `設定キー` を押すと、返信元の親ポストに対してアクションを実行します。（設定キーにCtrlが含まれていない場合のみ有効）  
     Pressing `Ctrl` + `Shortcut Key` performs the action on the **parent post** instead of the current one. (Active only if the shortcut doesn't already include Ctrl).
-
 * **設定の制約 / Configuration Constraints**:
   * **システム保護（予約済み）のため**、単体の「↑↓←→」および「Shift+←/→」はカスタムショートカットとして登録できません。  
     **Reserved for system protection**: Standalone Arrow keys (↑↓←→) and Shift+ArrowLeft/Right are reserved and cannot be assigned as custom shortcuts.
 
 ---
 
-## ⚙️ 動作環境とセットアップ / Requirements and Setup
-
-### 動作環境 (Operating Environment)
-* **対応ブラウザ**: Chrome, Firefox, Edge など (Tampermonkeyが動作するもの)  
-  **Supported Browsers**: Chrome, Firefox, Edge, etc. (where Tampermonkey works)
-* **必須 (Required)**: UserScript管理のための拡張機能  
-  **Required**: Extension for UserScript management
-
----
-
-## ✨ インストール方法 / Installation Guide
-
-* **UserScriptマネージャーをインストール (Install the UserScript manager):**
-   * **Tampermonkey**: [https://www.tampermonkey.net/](https://www.tampermonkey.net/)
-   * **ScriptCat**: [https://scriptcat.org/](https://scriptcat.org/)
-
-4. **スクリプトをインストール (Install the script):**
-   * [Greasy Fork](https://greasyfork.org/ja/scripts/550775) にアクセスし、「インストール」ボタンを押してください。  
-     Access and click the "Install" button.
-
----
-
 ## 📝 更新履歴 (Changelog)
 
-### v3.1 (Current Release)
+### v3.5 (Current Release)
+
+* ✅ **通知欄の引用リポストのメディア表示機能を実装**: 画像、GIF、動画が通知カード内でプレビュー可能に。
+
+### v3.1
 * ☑️ 設定UIに「親ポストへの操作」「画像切り替え」「本文のスクロール」の情報を追加。
 
 ### v3.0
@@ -111,12 +111,15 @@ These are only active while the MediaView is open.
 このユーザースクリプトのソースコードは、ねおんが著作権を保有しています。  
 The source code for this application is copyrighted by Neon.
 
-* **ライセンス**: **[CC BY-NC 4.0](https://creativecommons.org/licenses/by-nc/4.0/deed.ja)** です。（LICENSEファイルをご参照ください。）  
+* **ライセンス / License**: **[PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0/)** です。（LICENSEファイルをご参照ください。）  
   Licensed under CC BY-NC 4.0. (Please refer to the LICENSE file for details.)
-* **商用利用不可**: 個人での利用や改変、非営利の範囲内での再配布はOKです。  
-  **商用目的での利用はご遠慮ください**。  
-  **No Commercial Use**: Personal use, modification, and non-profit redistribution are permitted.  
-  **Please refrain from commercial use.**  
+* **個人利用・非営利目的限定 / For Personal and Non-commercial Use Only**:
+  * 営利目的での利用、無断転載、クレジットの削除は固く禁じます。  
+    Commercial use, unauthorized re-uploading, and removal of author credits are strictly prohibited.
+* **再配布について / About Redistribution**:
+  * 本スクリプトを改変・配布（フォーク）する場合は、必ず元の作者名（ねおん）およびクレジット表記を維持してください。  
+    If you modify or redistribute (fork) this script, you MUST retain the original author's name (Neon) and all credit notations.  
+
 ※ ご利用は自己責任でお願いします。（悪用できるようなものではないですが、念のため！）
 
 ## ⚠️ セキュリティ警告 (Security Warning)
