@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Tokimeki MediaView Fix Plus
 // @icon           data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌈</text></svg>
-// @version        3.1
+// @version        3.5
 // @description    Enables navigating to individual post pages by clicking on the body or quote source in TOKIMEKI's "Media" style. Also adds keyboard shortcuts for reactions.
 // @description:ja TOKIMEKIの「メディア」スタイルで投稿の本文や引用元をクリックした際に、その投稿の個別ページに移動できるようにします。また、キーボードショートカットでリアクション操作ができるようになります。
 // @author         ねおん
@@ -13,27 +13,30 @@
 // @grant          GM_setValue
 // @grant          GM_registerMenuCommand
 // @grant          GM_unregisterMenuCommand
-// @license        CC BY-NC 4.0
+// @license        PolyForm Noncommercial 1.0.0; https://polyformproject.org/licenses/noncommercial/1.0.0/
 // ==/UserScript==
 
 /**
  * ==============================================================================
  * IMPORTANT NOTICE / 重要事項
  * ==============================================================================
- * Copyright (c) 2024 ねおん (Neon)
- * Released under the CC BY-NC 4.0 License.
- * * [EN] Unauthorized re-uploading, modification of authorship, or removal of
+ * Copyright (c) 2025 ねおん (Neon)
+ * Licensed under the PolyForm Noncommercial License 1.0.0.
+ * * [JP] 本スクリプトは個人利用・非営利目的でのみ使用・改変が許可されます。
+ * 無断転載、作者名の書き換え、およびクレジットの削除は固く禁じます。
+ * 本スクリプトを改変・配布（フォーク）する場合は、必ず元の作者名（ねおん）
+ * およびこのクレジット表記を維持してください。
+ * * [EN] This script is licensed for personal and non-commercial use only.
+ * Unauthorized re-uploading, modification of authorship, or removal of
  * author credits is strictly prohibited. If you fork this project, you MUST
- * retain the original credits.
- * * [JP] 無断転載、作者名の書き換え、およびクレジットの削除は固く禁じます。
- * 本スクリプトを改変・配布する場合は、必ず元の作者名（ねおん）を明記してください。
+ * retain the original credits and authorship.
  * ==============================================================================
  */
 
 (function() {
     'use strict';
 
-    const VERSION = '3.1';
+    const VERSION = '3.5';
     const STORE_KEY = 'tokimeki_media_fix_shortcuts';
 
     // ========= 設定 =========
@@ -511,6 +514,241 @@
             }
         });
     }
+
+    // 拡大表示用のモーダル
+    function showFullSizeImage(url) {
+        const overlay = document.createElement('div');
+        overlay.className = 'neon-image-modal';
+        overlay.style.cssText = `
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 99999;
+            display: flex; align-items: center; justify-content: center;
+            cursor: zoom-out;
+        `;
+        const fullImg = document.createElement('img');
+        fullImg.src = url;
+        fullImg.style.cssText = 'max-width: 95%; max-height: 95%; object-fit: contain; border-radius: 4px;';
+        overlay.onclick = () => overlay.remove();
+        overlay.appendChild(fullImg);
+        document.body.appendChild(overlay);
+    }
+
+    // 画像やGIF、動画を網羅的に探す関数
+    function findMedia(obj) {
+        if (!obj) return null;
+
+        // 1. 画像 (Standard Images)
+        if (obj.images && Array.isArray(obj.images)) {
+            return { type: 'images', data: obj.images };
+        }
+
+        // 2. 動画 (Video View)
+        if (obj.$type === 'app.bsky.embed.video#view' || obj.video) {
+            const videoData = obj.video || obj;
+            return {
+                type: 'video',
+                data: [{
+                    thumb: videoData.thumbnail,
+                    video: videoData.playlist
+                }]
+            };
+        }
+
+        // 3. GIF (External Tenor)
+        const external = obj.external || (obj.media && obj.media.external);
+        if (external && (external.thumb || external.uri?.includes('tenor.com'))) {
+            return {
+                type: 'gif',
+                data: [{
+                    thumb: external.thumb,
+                    video: external.uri.replace('.gif', '.mp4')
+                }]
+            };
+        }
+
+        // 4. 引用リポストなどを再帰的に掘る
+        if (obj.media) return findMedia(obj.media);
+        if (obj.record) {
+            if (obj.record.embed) return findMedia(obj.record.embed);
+            if (obj.record.value && obj.record.value.embed) return findMedia(obj.record.value.embed);
+        }
+        return null;
+    }
+
+    async function fetchAndInjectImage(item) {
+        if (item.querySelector('.neon-fixed') || item.dataset.imageFixed) return;
+
+        // Tokimekiが自前でメディアを表示しているならスキップ
+        if (item.querySelector('.timeline-images') || item.querySelector('.gif-video-wrap')) return;
+
+        item.dataset.imageFixed = "true";
+        item.classList.add('neon-fixed');
+
+        const contentArea = item.querySelector('.notification-column__content');
+        if (!contentArea) return;
+
+        const postLink = contentArea.querySelector('a[href*="/post/"]');
+        if (!postLink) return;
+
+        const match = postLink.getAttribute('href').match(/\/profile\/([^/]+)\/post\/([^/]+)/);
+        if (!match) return;
+
+        const [_, handle, postId] = match;
+
+        try {
+            const apiUrl = `https://public.api.bsky.app/xrpc/app.bsky.feed.getPostThread?uri=at://${handle}/app.bsky.feed.post/${postId}&depth=0`;
+            const res = await fetch(apiUrl);
+            if (!res.ok) return;
+
+            const data = await res.json();
+            const post = data.thread?.post;
+            if (!post || !post.embed) return;
+            // console.log('[Debug] post.embed full structure:', JSON.stringify(post.embed, null, 2));
+
+            // ALTテキスト
+            const altText = post.embed?.external?.title ||
+                            post.embed?.media?.external?.title ||
+                            post.embed?.video?.alt ||
+                            post.embed?.alt || "";
+
+            // 探索開始
+            const result = findMedia(post.embed);
+            if (!result || !result.data || result.data.length === 0) return;
+
+            const wrapper = document.createElement('div');
+            wrapper.className = 'notifications-item-images svelte-68xwnf';
+            wrapper.style.marginTop = '10px';
+
+            // --- 分岐処理 ---
+
+            if (result.type === 'images') {
+                // 通常の画像レイアウト
+                const container = document.createElement('div');
+                container.className = 'timeline-images timeline-images--nocrop';
+
+                result.data.forEach(img => {
+                    const imgBox = document.createElement('div');
+                    imgBox.className = 'timeline-image svelte-1mo90jh';
+
+                    const btn = document.createElement('button');
+                    btn.className = 'svelte-1mo90jh';
+                    btn.setAttribute('aria-label', img.alt || 'Open image.');
+                    btn.style.cursor = 'zoom-in';
+                    btn.onclick = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        showFullSizeImage(img.fullsize || img.thumb);
+                    };
+
+                    const imgEl = document.createElement('img');
+                    imgEl.src = img.thumb;
+                    imgEl.alt = img.alt || "";
+                    imgEl.className = 'svelte-1mo90jh';
+                    imgEl.style.cssText = 'width: 100%; height: auto; max-height: 300px; object-fit: contain; border-radius: 8px;';
+
+                    btn.appendChild(imgEl);
+                    imgBox.appendChild(btn);
+                    container.appendChild(imgBox);
+                });
+                wrapper.appendChild(container);
+            } else {
+                wrapper.className = 'notifications-item-images svelte-68xwnf timeline-external--normal svelte-1mlxd9t timeline-external--tenor';
+
+                const mediaData = result.data[0] || {};
+                const rawUrl = mediaData.url || mediaData.video || "";
+
+                // 動画(m3u8)かどうかの判定
+                const isVideo = rawUrl.includes('playlist.m3u8');
+
+                // URL置換（GIFの場合のみ）
+                let videoUrl = rawUrl;
+                if (!isVideo) {
+                    videoUrl = rawUrl.replace(/AAA[A-Z0-9]{2}/, 'AAAP1').replace('.gif', '.mp4');
+                }
+
+                wrapper.innerHTML = `
+                    <div class="timeline-external__image">
+                        <div class="timeline-tenor-external">
+                            <div class="gif-video-wrap svelte-or3n9u">
+                                ${!isVideo ? `
+                                    <div class="gif-pause-icon svelte-or3n9u" style="display: none;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="21" height="24" viewBox="0 0 21 24" class="svelte-or3n9u">
+                                            <path id="多角形_1" data-name="多角形 1" d="M10.264,3.039a2,2,0,0,1,3.473,0L22.29,18.008A2,2,0,0,1,20.554,21H3.446A2,2,0,0,1,1.71,18.008Z" transform="translate(21) rotate(90)" fill="#fff"></path>
+                                        </svg>
+                                    </div>
+                                ` : ''}
+                                <video class="gif-video svelte-or3n9u"
+                                       playsinline
+                                       ${isVideo ? 'controls' : 'loop autoplay muted'}
+                                       src="${videoUrl}"
+                                       style="width: 100%; border-radius: 8px; display: block; cursor: pointer;"></video>
+                                ${!isVideo ? '<button class="gif-toggle svelte-or3n9u"></button>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                    ${altText ? `
+                    <div class="timeline-external__content svelte-1mlxd9t">
+                        <p class="timeline-external__title">
+                            <a target="_blank" rel="noopener nofollow noreferrer" class="svelte-1mlxd9t" href="${rawUrl}">${altText}</a>
+                        </p>
+                        <p class="timeline-external__description">ALT: ${altText}</p>
+                    </div>
+                    ` : ''}
+                `;
+
+                // 動画でない（GIFの）時だけ、クリック制御を有効にする
+                if (!isVideo) {
+                    const videoEl = wrapper.querySelector('video');
+                    const toggleBtn = wrapper.querySelector('.gif-toggle');
+                    const pauseIcon = wrapper.querySelector('.gif-pause-icon');
+
+                    const togglePlay = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        if (videoEl.paused) {
+                            videoEl.play();
+                            pauseIcon.style.display = 'none';
+                        } else {
+                            videoEl.pause();
+                            pauseIcon.style.display = '';
+                        }
+                    };
+                    videoEl.onclick = togglePlay;
+                    if (toggleBtn) toggleBtn.onclick = togglePlay;
+                }
+            }
+
+            // 挿入
+            const textContent = item.querySelector('.notifications-item__content');
+            if (textContent) {
+                textContent.after(wrapper);
+            } else {
+                contentArea.appendChild(wrapper);
+            }
+
+        } catch (e) {
+            console.error("Notif Media Fix Error:", e);
+        }
+    }
+
+    // 監視設定
+    const observer = new MutationObserver((mutations) => {
+        for (const mutation of mutations) {
+            mutation.addedNodes.forEach(node => {
+                if (node.nodeType !== 1) return;
+
+                // リポスト通知のarticleのみを抽出
+                const targetItems = node.matches('article.notifications-item')
+                    ? [node]
+                    : node.querySelectorAll('article.notifications-item');
+
+                targetItems.forEach(item => fetchAndInjectImage(item));
+            });
+        }
+    });
+
+    // 実行開始（既存の処理の最後に追加）
+    observer.observe(document.body, { childList: true, subtree: true });
 
     GM_registerMenuCommand('キー設定 (Shortcut Settings)', openSettings);
 
