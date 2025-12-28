@@ -15,12 +15,12 @@ This script fixes and improves the following issues in Tokimeki's MediaView (the
       このスクリプトは、投稿本文エリアのどこをクリックしても、その投稿の詳細ページに**瞬時に遷移**するように修復します。  
       In Tokimeki's default MediaView, clicking on the post body does not navigate you to the post's detail page.  
       This script fixes that, allowing you to instantly navigate to the detail view by clicking anywhere within the post content area.
-2.  ⌨️ **キーボード操作による劇的なUX向上 / Drastic UX Improvement via Keyboard Shortcuts**:
+2.  ⌨️ **キーボード操作による劇的なUX向上 (v2.2～) / Drastic UX Improvement via Keyboard Shortcuts**:
     * メディアビューを開いたまま、キーボードショートカットでリプライ、いいね、リポストなどの**リアクションを瞬時に実行**できます。  
       You can **instantly perform reactions** like Reply, Like, and Repost using keyboard shortcuts without closing the MediaView.
     * 複数枚画像のスライド、本文のスクロール、モデレーション表示のトグル「表示する/隠す」もキーボードで操作可能です。  
       You can also use the keyboard to slide through multiple images, scroll through long post text, and toggle the moderation display (Show/Hide).
-3. 🔔 **通知欄のメディアプレビュー (New! v3.5) / Notification Media Preview**:
+3. 🔔 **通知欄のメディアプレビュー (New! v3.5～) / Notification Media Preview**:
     * Tokimekiの通知欄では通常表示されない、**引用リポストに含まれる画像、GIFステッカー、動画（m3u8）** を、通知カード内に直接表示します。  
       Displays **images, GIF stickers, and videos (m3u8) contained within quoted posts**, which are normally hidden in Tokimeki's notification column.
 
