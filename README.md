@@ -69,6 +69,18 @@ These are only active while the MediaView is open.
 
 ---
 
+### ✨ インストール方法 / Installation Guide
+
+* **UserScriptマネージャーをインストール (Install the UserScript manager):**
+   * **Tampermonkey**: [https://www.tampermonkey.net/](https://www.tampermonkey.net/)
+   * **ScriptCat**: [https://scriptcat.org/](https://scriptcat.org/)
+
+4. **スクリプトをインストール (Install the script):**
+   * [Greasy Fork](https://greasyfork.org/ja/scripts/550775) にアクセスし、「インストール」ボタンを押してください。  
+     Access and click the "Install" button.
+
+---
+
 ## 📝 更新履歴 (Changelog)
 
 ### v3.6 (Current Release)
