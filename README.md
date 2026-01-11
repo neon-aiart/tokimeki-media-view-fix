@@ -128,7 +128,7 @@ These are only active while the MediaView is open.
 The source code for this application is copyrighted by Neon.
 
 * **ライセンス / License**: **[PolyForm Noncommercial 1.0.0](https://polyformproject.org/licenses/noncommercial/1.0.0/)** です。（LICENSEファイルをご参照ください。）  
-  Licensed under CC BY-NC 4.0. (Please refer to the LICENSE file for details.)
+  Licensed under PolyForm Noncommercial 1.0.0. (Please refer to the LICENSE file for details.)
 * **個人利用・非営利目的限定 / For Personal and Non-commercial Use Only**:
   * 営利目的での利用、無断転載、クレジットの削除は固く禁じます。  
     Commercial use, unauthorized re-uploading, and removal of author credits are strictly prohibited.
