@@ -83,7 +83,7 @@ These are only active while the MediaView is open.
 ## 📝 更新履歴 (Changelog)  
 
 ### v3.8 (Current Release)  
-✅ 引用ポストで補完できていなかったパターンを修正  
+✅ 引用ポストで補完できていなかったパターンがあったのを修正  
 
 ### v3.6  
 ✅ **リンクカードのサムネイルプレビューを実装**: 通知カラムのリンクカードが含まれるポストのサムネイルを表示  
