@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Tokimeki MediaView Fix Plus
 // @icon           data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌈</text></svg>
-// @version        3.7
+// @version        3.8
 // @description    Enables navigating to individual post pages by clicking on the body or quote source in TOKIMEKI's "Media" style. Also adds keyboard shortcuts for reactions.
 // @description:ja TOKIMEKIの「メディア」スタイルで投稿の本文や引用元をクリックした際に、その投稿の個別ページに移動できるようにします。また、キーボードショートカットでリアクション操作ができるようになります。
 // @author         ねおん
@@ -36,7 +36,7 @@
 (function() {
     'use strict';
 
-    const VERSION = '3.7';
+    const VERSION = '3.8';
     const STORE_KEY = 'tokimeki_media_fix_shortcuts';
 
     // ========= 設定 =========
@@ -584,45 +584,61 @@
             return null;
         }
 
-        // 画像
-        if (obj.images && Array.isArray(obj.images)) {
-            return { type: 'images', data: obj.images, };
+        // --- 1. RecordWithMedia の media をチェック ---
+        // これが「自分の投稿に添付した画像/動画」になる
+        if (obj.$type === 'app.bsky.embed.recordWithMedia#view' || obj.media) {
+            const mediaFound = findMedia(obj.media || obj); // mediaの中身を再帰
+            if (mediaFound) {
+                return mediaFound;
+            }
         }
 
-        // 動画
-        if (obj.$type === 'app.bsky.embed.video#view' || obj.video) {
-            const videoData = obj.video || obj;
+        // --- 2. 画像の判定 (URL文字列優先) ---
+        if (obj.images && Array.isArray(obj.images) && obj.images[0]) {
+            const thumbUrl = typeof obj.images[0].thumb === 'string' ? obj.images[0].thumb : null;
+            if (thumbUrl) {
+                return {
+                    type: 'images',
+                    data: obj.images.map(img => ({ ...img, thumb: typeof img.thumb === 'string' ? img.thumb : null, })),
+                };
+            }
+        }
+
+        // --- 3. 動画の判定 ---
+        const videoThumb = obj.thumbnail || obj.thumb || (obj.video && (obj.video.thumbnail || obj.video.thumb));
+        if ((obj.$type?.includes('video') || obj.playlist) && typeof videoThumb === 'string') {
             return {
                 type: 'video',
-                data: [{ thumb: videoData.thumbnail, video: videoData.playlist, },],
+                data: [{ thumb: videoThumb, video: obj.playlist || obj.video?.playlist, },],
             };
         }
 
-        // GIFステッカーと外部リンク
-        const external = obj.external || (obj.media && obj.media.external);
-        if (external) {
-            // Tenor (GIF)
-            if (external.uri?.includes('tenor.com')) {
-                return {
-                    type: 'gif',
-                    data: [{ thumb: external.thumb, video: external.uri.replace('.gif', '.mp4'), },],
-                };
+        // --- 4. 外部リンク / Tenor ---
+        const ext = obj.external || (obj.media && obj.media.external);
+        if (ext && ext.uri) {
+            const thumbUrl = typeof ext.thumb === 'string' ? ext.thumb : null;
+            if (ext.uri.includes('tenor.com')) {
+                return { type: 'gif', data: [{ thumb: thumbUrl, video: ext.uri.replace('.gif', '.mp4'), },], };
             }
-            return { type: 'external', data: [external,], }; // 一般的なリンクカード
+            // リンクカードはサムネがある場合のみ採用（灰色の板防止）
+            if (thumbUrl) {
+                return { type: 'external', data: [{ ...ext, thumb: thumbUrl, },], };
+            }
         }
 
-        // 再帰探索
-        if (obj.media) {
-            return findMedia(obj.media);
-        }
+        // --- 5. 自分の投稿にメディアがなければ、引用先 (record) を探す ---
         if (obj.record) {
-            if (obj.record.embed) {
-                return findMedia(obj.record.embed);
+            // record.embeds[0] (整形済みデータ) を優先
+            if (obj.record.embeds && obj.record.embeds[0]) {
+                const found = findMedia(obj.record.embeds[0]);
+                if (found) {
+                    return found;
+                }
             }
-            if (obj.record.value && obj.record.value.embed) {
-                return findMedia(obj.record.value.embed);
-            }
+            // record 直下や record.record (ネストされたrecord) を探索
+            return findMedia(obj.record.record || obj.record);
         }
+
         return null;
     }
 
@@ -657,7 +673,7 @@
         const [_, handle, postId,] = match;
 
         try {
-            const apiUrl = `https://public.api.bsky.app/xrpc/app.bsky.feed.getPostThread?uri=at://${handle}/app.bsky.feed.post/${postId}&depth=0`;
+            const apiUrl = `https://public.api.bsky.app/xrpc/app.bsky.feed.getPostThread?uri=at://${handle}/app.bsky.feed.post/${postId}&depth=1`;
             const res = await fetch(apiUrl);
             if (!res.ok) {
                 return;
@@ -673,12 +689,13 @@
             // ALTテキスト
             const altText = post.embed?.external?.title ||
                             post.embed?.media?.external?.title ||
+                            post.embed?.media?.alt ||
                             post.embed?.video?.alt ||
                             post.embed?.alt || '';
 
             // 探索開始
             const result = findMedia(post.embed);
-            if (!result || !result.data || result.data.length === 0) {
+            if (!result || !result.data || !result.data[0] || !result.data[0].thumb) {
                 return;
             }
 
@@ -806,10 +823,10 @@
                                     </div>
                                 ` : ''}
                                 <video class="gif-video svelte-or3n9u"
-                                       playsinline
-                                       ${isVideo ? 'controls' : 'loop autoplay muted'}
-                                       src="${videoUrl}"
-                                       style="width: 100%; border-radius: 8px; display: block; cursor: pointer;"></video>
+                                    playsinline
+                                    ${isVideo ? 'controls' : 'loop autoplay muted'}
+                                    src="${videoUrl}"
+                                    style="width: 100%; border-radius: 8px; display: block; cursor: pointer;"></video>
                                 ${!isVideo ? '<button class="gif-toggle svelte-or3n9u"></button>' : ''}
                             </div>
                         </div>
