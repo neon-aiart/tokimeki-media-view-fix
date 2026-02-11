@@ -138,18 +138,25 @@ The source code for this application is copyrighted by Neon.
 
 ※ ご利用は自己責任でお願いします（悪用できるようなものではないですが、念のため！）  
 
-## ⚠️ セキュリティ警告 (Security Warning)  
-当プロジェクトの無断転載に対し、過去にDMCA Take-down通知を送付しています  
-ライセンスの遵守をお願いします  
-We have filed DMCA Take-down notices in the past regarding unauthorized re-uploading of this project.  
-Please ensure compliance with the license.  
+---
 
-🚨 **重要：公式配布は GreasyFork または GitHub 上の `.js` ファイルのみです**  
-他サイトなどで `.zip`、`.exe`、`.cmd` 形式で配布されているものは**偽物**であり、**ウイルスやマルウェア**が含まれている危険性があります  
-絶対に使用しないでください  
-🚨 **IMPORTANT: Official distribution is ONLY via GreasyFork or GitHub as a `.js` file.**  
-If you find this project distributed as a `.zip`, `.exe`, or `.cmd` file on other sites, it is a **FAKE** and may contain **VIRUSES or MALWARE**.  
-Please do not download or execute such files.  
+## ⚠️ セキュリティ警告 / Security Warning  
+
+🚨 **重要：公式配布について / IMPORTANT: Official Distribution**  
+当プロジェクトの公式スクリプトは、**GitHub または GreasyFork** でのみ公開しています。  
+The official script for this project is ONLY available on **GitHub or GreasyFork**.  
+
+🚨 **偽物に注意 / Beware of Fakes**  
+他サイト等で `.zip`, `.exe`, `.cmd` 形式で配布されているものはすべて**偽物**です。  
+これらには**ウイルスやマルウェア**が含まれていることが確認されており、非常に危険です。  
+Any distribution in `.zip`, `.exe`, `.cmd` formats on other sites is **FAKE**.  
+These have been confirmed to contain **VIRUSES or MALWARE**.  
+
+### ⚖️ 法的措置と通報について / Legal Action & Abuse Reports  
+当プロジェクトの制作物に対する無断転載が確認されたため、過去に **DMCA Take-down通知** を送付しています。  
+また、マルウェアを配布する悪質なサイトについては、順次 **各機関へ通報 (Malware / Abuse Report)** を行っています。  
+We have filed **DMCA Take-down notices** against unauthorized re-uploads of my projects.  
+Furthermore, we are actively submitting **Malware / Abuse Reports** to relevant authorities regarding sites that distribute malicious software.  
 
 ---
 
