@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Tokimeki MediaView Fix Plus
 // @icon           data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌈</text></svg>
-// @version        3.8
+// @version        3.9
 // @description    Enables navigating to individual post pages by clicking on the body or quote source in TOKIMEKI's "Media" style. Also adds keyboard shortcuts for reactions.
 // @description:ja TOKIMEKIの「メディア」スタイルで投稿の本文や引用元をクリックした際に、その投稿の個別ページに移動できるようにします。また、キーボードショートカットでリアクション操作ができるようになります。
 // @author         ねおん
@@ -9,6 +9,7 @@
 // @homepage       https://neon-aiart.github.io/
 // @match          https://tokimeki.blue/*
 // @match          https://tokimekibluesky.vercel.app/*
+// @grant          GM_addStyle
 // @grant          GM_getValue
 // @grant          GM_setValue
 // @grant          GM_registerMenuCommand
@@ -36,18 +37,64 @@
 (function() {
     'use strict';
 
-    const VERSION = '3.8';
+    const VERSION = '3.9';
     const STORE_KEY = 'tokimeki_media_fix_shortcuts';
 
+    // スタイル定義（GM_addStyle）
+    GM_addStyle(`
+        /* MediaViewの「前へ」「次へ」ボタンを劇的に見やすくする */
+        body.tmf-big-buttons .embla__prev,
+        body.tmf-big-buttons .embla__next {
+            background-color: var(--primary-color) !important; /* 背景を水色に */
+            color: var(--bg-color-1) !important;               /* 矢印（文字色）を白に */
+            border-radius: 50% !important;
+            width: 40px !important;                            /* 大きくする */
+            height: 40px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            opacity: 0.7 !important;                           /* 少し透かして邪魔にならないように */
+            transition: all 0.2s ease !important;
+            border: 2px solid var(--bg-color-1) !important;    /* 白い縁取りでさらに目立たせる */
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+        }
+
+        /* ホバー時に強調 */
+        body.tmf-big-buttons .embla__prev:hover,
+        body.tmf-big-buttons .embla__next:hover {
+            opacity: 1 !important;
+            transform: scale(1.1) !important;
+            background-color: var(--primary-color) !important;
+        }
+
+        /* 矢印（SVG）自体のサイズも調整 */
+        body.tmf-big-buttons .embla__prev svg,
+        body.tmf-big-buttons .embla__next svg {
+            width: 30px !important;
+            height: 30px !important;
+        }
+    `);
+
     // ========= 設定 =========
-    let shortcuts = GM_getValue(STORE_KEY, {
+    const DEFAULT_CONFIG = {
         reply: 'Numpad1',
         repost: 'Numpad2',
         like: 'Numpad3',
         quote: 'Numpad4',
         bookmark: 'Numpad5',
         moderation: 'Numpad6',
-    });
+        bigSlideButtons: true, // ボタンのサイズを大きくする
+        unifiedSlideKey: true, // 左右キーで画像切り替えもする（Shift + ←/→も有効）
+    };
+    let savedConfig = GM_getValue(STORE_KEY, {});
+    let config = {
+        ...DEFAULT_CONFIG,
+        ...savedConfig,
+    };
+
+    if (config.bigSlideButtons) {
+        document.body.classList.add('tmf-big-buttons');
+    }
 
     // ========= クリックでポストを開く処理 (v1.4ベース) =========
     document.body.addEventListener('click', function(e) {
@@ -97,6 +144,35 @@
         }
     }, true); // イベントキャプチャリングを使い、TOKIMEKIの処理より先にこのリスナーを実行
 
+    // 現在何枚目かを特定する
+    function getCurrentSlideIndex(dialog) {
+        const container = dialog.querySelector('.embla__container');
+        const slides = Array.from(dialog.querySelectorAll('.embla__slide'));
+        if (!container || slides.length === 0) {
+            return 0;
+        }
+
+        // ダイアログ自体の左端の位置を取得
+        const dialogLeft = dialog.getBoundingClientRect().left;
+
+        // 各スライドの中で、一番「画面の左端（ダイアログの左端）」に近いものを探す
+        let minDiff = Infinity;
+        let currentIndex = 0;
+
+        slides.forEach((slide, index) => {
+            const rect = slide.getBoundingClientRect();
+            // スライドの左端とダイアログの左端の距離の絶対値
+            const diff = Math.abs(rect.left - dialogLeft);
+
+            if (diff < minDiff) {
+                minDiff = diff;
+                currentIndex = index;
+            }
+        });
+
+        return currentIndex;
+    }
+
     // ========= キーボード操作 =========
     document.body.addEventListener('keydown', function(e) {
         // メディアビューが開いていない、または入力欄にフォーカスがある、設定画面が開いている場合は何もしない
@@ -139,13 +215,13 @@
         const currentPressedKey = finalKeys.join('+');
 
         // 押されたキーに一致するアクションを探す
-        let action = Object.keys(shortcuts).find(key => currentPressedKey === shortcuts[key]);
+        let action = Object.keys(config).find(key => currentPressedKey === config[key]);
         let isParentOperation = false;
 
         // Ctrl+押されたキーで設定があるか探し直す
         if (!action && currentPressedKey.startsWith('Ctrl+')) {
             const baseKey = currentPressedKey.replace('Ctrl+', '');
-            action = Object.keys(shortcuts).find(key => shortcuts[key] === baseKey);
+            action = Object.keys(config).find(key => config[key] === baseKey);
             if (action) {
                 isParentOperation = true;
             }
@@ -174,6 +250,35 @@
                         targetButton.style.transform = '';
                     }, 150);
                     return;
+                }
+            }
+        }
+
+        // 画像切り替えとポスト切り替えの統合（左右キーで画像切り替えもするオプションが有効な場合）
+        if (config.unifiedSlideKey) {
+            if (currentPressedKey === 'ArrowRight' || currentPressedKey === 'ArrowLeft') {
+                const currentIndex = getCurrentSlideIndex(dialog);
+                const totalSlides = dialog.querySelectorAll('.embla__slide').length;
+
+                if (currentPressedKey === 'ArrowRight') {
+                    // 最後の画像（3枚ならIndex 2）より前なら、画像切り替えを優先
+                    if (currentIndex < totalSlides - 1) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        dialog.querySelector('.embla__next')?.click();
+                        return;
+                    }
+                    // 最後の画像なら、stopPropagationせずにスルー（TOKIMEKI本体が次ポストへ飛ばしてくれる）
+                }
+                if (currentPressedKey === 'ArrowLeft') {
+                    // 最初の画像（Index 0）より後なら、画像切り替えを優先
+                    if (currentIndex > 0) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        dialog.querySelector('.embla__prev')?.click();
+                        return;
+                    }
+                    // 最初の画像なら、スルー（TOKIMEKI本体が前ポストへ飛ばしてくれる）
                 }
             }
         }
@@ -319,9 +424,68 @@
         .tmf-bottom .tmf-version { font-size: 0.8rem; font-weight: 400; color: #aaa; }
         .tmf-button { padding: 10px 20px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; transition: all 0.2s ease; background-color: var(--tmf-primary-color); color: white; }
         .tmf-button:hover { background-color: var(--tmf-primary-hover); }
+        .tmf-divider {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--tmf-border-color); /* 実線で区切る */
+        }
+        /* トグルスイッチの土台 */
+        .tmf-switch {
+            position: relative;
+            display: inline-block;
+            width: 46px;
+            height: 24px;
+            flex-shrink: 0; /* 勝手に縮まないように */
+        }
+        /* 本物のチェックボックスは隠す */
+        .tmf-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        /* スライダー部分 */
+        .tmf-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #555;
+            transition: .3s;
+            border-radius: 24px;
+        }
+        /* 中の白い丸 */
+        .tmf-slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        /* ONの時の色 */
+        input:checked + .tmf-slider {
+            background-color: var(--tmf-primary-color);
+        }
+        /* ONの時の丸の移動 */
+        input:checked + .tmf-slider:before {
+            transform: translateX(22px);
+        }
+        /* 設定項目を横並びにして右端に寄せる */
+        .tmf-option-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* これでテキストが左、スイッチが右になる */
+            padding: 8px 0;
+        }
+        /* 最後の行だけ下の余白をなくす */
+        .tmf-option-row:last-child {
+            padding-bottom: 0;
+        }
         /* 説明ボックスのスタイル */
         .tmf-info-box {
-            margin-top: 15px;
+            margin: 0 15px 15px 15px; /* 上 | 右 | 下 | 左 の順番（時計回り） */
             padding-top: 15px;
             border-top: 1px dashed var(--tmf-border-color);
             font-size: 0.85rem;
@@ -349,14 +513,14 @@
         const toast = document.createElement('div');
         toast.textContent = msg;
         toast.style.cssText = `
-          position: fixed; bottom: 20px; left: 50%;
-          transform: translateX(-50%);
-          background: ${isError ? '#e34959' : 'var(--tmf-primary-color)'};
-          color: white; padding: 10px 20px;
-          border-radius: 6px;
-          z-index: 100001;
-          font-size: 14px;
-          box-shadow: var(--tmf-shadow);
+            position: fixed; bottom: 20px; left: 50%;
+            transform: translateX(-50%);
+            background: ${isError ? '#e34959' : 'var(--tmf-primary-color)'};
+            color: white; padding: 10px 20px;
+            border-radius: 6px;
+            z-index: 100001;
+            font-size: 14px;
+            box-shadow: var(--tmf-shadow);
         `;
         document.body.appendChild(toast);
         setTimeout(() => toast.remove(), 3000);
@@ -385,7 +549,7 @@
         panel.className = 'tmf-panel';
 
         panel.innerHTML = `
-            <div class="tmf-title"><span>キー設定 (Shortcut Settings)</span><button class="tmf-close">&times;</button></div>
+            <div class="tmf-title"><span>設定 (Settings)</span><button class="tmf-close">&times;</button></div>
             <div class="tmf-section">
                 <div class="tmf-shortcut-grid">
                     <label class="tmf-label" for="tmf-reply"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M22 17a2 2 0 0 1-2 2H6.828a2 2 0 0 0-1.414.586l-2.202 2.202A.71.71 0 0 1 2 21.286V5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2z"></path></svg><span>コメント (Reply)</span></label><input type="text" id="tmf-reply" class="tmf-input" readonly>
@@ -394,6 +558,31 @@
                     <label class="tmf-label" for="tmf-quote"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path><path d="M5 3a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2 1 1 0 0 1 1 1v1a2 2 0 0 1-2 2 1 1 0 0 0-1 1v2a1 1 0 0 0 1 1 6 6 0 0 0 6-6V5a2 2 0 0 0-2-2z"></path></svg><span>引用 (Quote)</span></label><input type="text" id="tmf-quote" class="tmf-input" readonly>
                     <label class="tmf-label" for="tmf-bookmark"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="m19 21-7-4-7 4V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16z"></path></svg><span>ブックマーク (Bookmark)</span></label><input type="text" id="tmf-bookmark" class="tmf-input" readonly>
                     <label class="tmf-label" for="tmf-moderation"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg><span>モデレーション (Moderation)</span></label><input type="text" id="tmf-moderation" class="tmf-input" readonly>
+                </div>
+
+                <div class="tmf-divider">
+                    <div class="tmf-option-row">
+                        <label for="tmf-big-buttons" style="cursor: pointer;">
+                            <span style="display: block; font-size: 0.95rem;">画像切り替えボタンを大きくする</span>
+                            <small style="color: #888; font-size: 0.8rem; font-weight: normal;">Enlarge Navigation Buttons</small>
+                        </label>
+                        <label class="tmf-switch">
+                            <input type="checkbox" id="tmf-big-buttons" ${config.bigSlideButtons ? 'checked' : ''}>
+                            <span class="tmf-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="tmf-option-row">
+                        <label for="tmf-unified-slide-key" style="cursor: pointer;">
+                            <span style="display: block; font-size: 0.95rem;">左右キーでも画像を切り替える</span>
+                            <small style="color: #888; font-size: 0.8rem; font-weight: normal;">Switch Images with Left/Right Keys</small>
+                        </label>
+                        <label class="tmf-switch">
+                            <input type="checkbox" id="tmf-unified-slide-key" ${config.unifiedSlideKey ? 'checked' : ''}>
+                            <span class="tmf-slider"></span>
+                        </label>
+                    </div>
                 </div>
 
                 <div class="tmf-info-box">
@@ -425,7 +614,7 @@
 
         // 現在の設定値を表示
         for (const action in inputs) {
-            inputs[action].value = shortcuts[action] || '';
+            inputs[action].value = config[action] || '';
         }
 
         let activeInput = null;
@@ -516,7 +705,7 @@
 
         panel.querySelector('.tmf-close').addEventListener('click', () => overlay.remove());
         panel.querySelector('.tmf-button').addEventListener('click', () => {
-            const newShortcuts = {};
+            const newConfig = {};
             let hasError = false;
 
             // 予約済み（設定不可）キーのリスト
@@ -525,6 +714,11 @@
                 'Shift+ArrowLeft', 'Shift+ArrowRight',
             ];
 
+            // --- A. チェックボックスなどの値を個別に取得 ---
+            newConfig.bigSlideButtons = document.getElementById('tmf-big-buttons').checked;
+            newConfig.unifiedSlideKey = document.getElementById('tmf-unified-slide-key').checked;
+
+            // --- B. ショートカットキーのバリデーション ---
             for (const action in inputs) {
                 const val = inputs[action].value;
 
@@ -548,12 +742,20 @@
                     break;
                 }
 
-                newShortcuts[action] = val;
+                newConfig[action] = val;
             }
 
             if (!hasError) {
-                shortcuts = newShortcuts;
-                GM_setValue(STORE_KEY, shortcuts);
+                config = newConfig;
+                GM_setValue(STORE_KEY, config);
+
+                // --- C. 即時反映（リロードなしで見た目を変える） ---
+                if (config.bigSlideButtons) {
+                    document.body.classList.add('tmf-big-buttons');
+                } else {
+                    document.body.classList.remove('tmf-big-buttons');
+                }
+
                 showToast('設定を保存しました (Settings saved)');
                 overlay.remove();
             }
@@ -641,6 +843,32 @@
 
         return null;
     }
+
+    /*
+    <div class="app ltr lang-ja font-size-2 font-theme-zenmaru svelte-1v2axqk bubble" dir="ltr" style="
+        --primary-color: #00a8ff;
+        --secondary-color: #b8dcf7;
+        --base-bg-color: #f8f9fc;
+        --base-bg-image: #fff;
+        --bg-color-1: #fff;
+        --bg-color-2: #f8f8fa;
+        --bg-color-3: #f8f9fb;
+        --border-color-1: #d8dee9;
+        --border-color-2: #e8ecf4;
+        --text-color-1: #1a1b22;
+        --text-color-2: #6d7079;
+        --text-color-3: #6d7079;
+        --success-color: #a3be8c;
+        --danger-color: #e34959;
+        --follow-color: #d8dee9;
+        --side-box-shadow: 2px 0 24px rgba(61,120,209,.14);
+        --side-nav-hover-bg-color: hsla(0,0%,100%,.5);
+        --nav-content-bg-color: hsla(0,0%,100%,.75);
+        --timeline-reaction-liked-icon-color: #e34959;
+        --timeline-reaction-reposted-icon-color: #6cc361;
+        --publish-tool-button-color: #606060;
+    ">
+    */
 
     async function fetchAndInjectImage(item) {
         if (item.querySelector('.neon-fixed') || item.dataset.imageFixed) {
@@ -886,12 +1114,21 @@
                     return;
                 }
 
-                // リポスト通知のarticleのみを抽出
-                const targetItems = node.matches('article.notifications-item')
+                // 通知のarticleのみを抽出
+                const notificationsItems = node.matches('article.notifications-item')
                     ? [node,]
                     : node.querySelectorAll('article.notifications-item');
 
-                targetItems.forEach(item => fetchAndInjectImage(item));
+                notificationsItems.forEach(item => fetchAndInjectImage(item));
+
+                /*
+                // MediaViewのmutationを監視
+                const mediaContentWraps = node.matches('dialog.media-content-wrap')
+                    ? [node,]
+                    : node.querySelectorAll('dialog.media-content-wrap');
+
+                mediaContentWraps.forEach(item => dialogOpenMediaView(item));
+                */
             });
         }
     });
@@ -899,6 +1136,6 @@
     // 実行開始（既存の処理の最後に追加）
     observer.observe(document.body, { childList: true, subtree: true, });
 
-    GM_registerMenuCommand('キー設定 (Shortcut Settings)', openSettings);
+    GM_registerMenuCommand('設定 (Settings)', openSettings);
 
 })();

@@ -1,123 +1,167 @@
-# 🌈 Tokimeki MediaView Fix Plus v3.8  
+# 🌈 Tokimeki MediaView Fix Plus v3.9  
 
 Blueskyクライアント "Tokimeki" における、メディアビューの修正に加え、**通知カラムでの画像・動画プレビュー機能**、そしてキーボード操作による快適な閲覧体験を追加する強力なUserScriptです  
+
 A powerful UserScript for the Bluesky client "Tokimeki" that fixes MediaView, *adds image, video, and link card previews to the notification column**, and enhances the experience with keyboard-driven interactions.  
 
 ---
 
 ## 🎀 機能紹介 / Features  
 
-このスクリプトは、Tokimekiのメディアビュー（画像を拡大表示したモーダル）の以下の問題点を修正・改善します  
+このスクリプトは、Tokimekiのメディアビュー（画像を拡大表示したモーダル）の以下の問題点を改善します  
 This script fixes and improves the following issues in Tokimeki's MediaView (the modal for enlarged images).  
 
-1.  🖼️ **メディアビュー内のクリック修復 / Click Navigation Fix**:  
+1. 🖼️ **メディアビュー内のクリック修復 / Click Navigation Fix:**  
     * Tokimekiのメディアビューでは、投稿本文をクリックしてもノーマルビュー（詳細画面）に遷移しません  
       このスクリプトは、投稿本文エリアのどこをクリックしても、その投稿の詳細ページに**瞬時に遷移**するように修復します  
       In Tokimeki's default MediaView, clicking on the post body does not navigate you to the post's detail page.  
       This script fixes that, allowing you to instantly navigate to the detail view by clicking anywhere within the post content area.  
-2.  ⌨️ **キーボード操作による劇的なUX向上 (v2.2～) / Drastic UX Improvement via Keyboard Shortcuts**:  
+2. ⌨️ **キーボード操作による劇的なUX向上 (v2.2～) / Drastic UX Improvement via Keyboard Shortcuts:**  
     * メディアビューを開いたまま、キーボードショートカットでリプライ、いいね、リポストなどの**リアクションを瞬時に実行**できます  
       You can **instantly perform reactions** like Reply, Like, and Repost using keyboard shortcuts without closing the MediaView.  
     * 複数枚画像のスライド、本文のスクロール、モデレーション表示のトグル「表示する/隠す」もキーボードで操作可能です  
       You can also use the keyboard to slide through multiple images, scroll through long post text, and toggle the moderation display (Show/Hide).  
-3. 🔔 **通知カラムのメディアプレビュー (🆕 v3.5～) / Notification Media Preview**:  
+3. 🔔 **通知カラムのメディアプレビュー (v3.5～) / Notification Media Preview:**  
     * Tokimekiの通知欄では通常表示されない、**リンクカード、および引用リポストに含まれる画像・GIFステッカー・動画（m3u8）** を、通知カラム内に直接表示します  
       Directly displays **link cards, as well as media within quoted posts (images, GIF stickers, and m3u8 videos),** in the notification card, which are not normally shown in Tokimeki's notification column.  
+4. 🔄 **操作系と視覚ガイドの強化 (🆕 v3.9～) / Enhanced Navigation & Visual Guides:**  
+    * 左右矢印キーのみで、複数画像の切り替えとポストの移動を**シームレスに操作**できます  
+      一枚目の画像で「左」を押せば前のポストへ、最後の画像で「右」を押せば次のポストへ  
+      画像が複数ある間は画像をめくります  
+      Seamlessly navigate between images and posts using only the **Left/Right arrow keys**.  
+      Pressing "Left" on the first image takes you to the previous post, and "Right" on the last image moves to the next post.  
+      While multiple images exist, the keys will flip through them first.  
+    * **画像切り替えボタンの大型化:**  
+      ボタンの視認性を高め、現在の操作状況を分かりやすくします  
+      **Enlarge Navigation Buttons:**  
+      Enhances button visibility, making the current navigation status clearer and more intuitive.  
 
 ---
 
-## ⌨️ キーボードショートカット  
+## ⚙️ カスタマイズ設定 / Customizable Settings  
 
 メディアビューが開いているときのみ有効です  
 These are only active while the MediaView is open.  
 
-### ⚙️ カスタマイズ可能な操作 / Customizable Keys  
+### ⌨️ キーボードショートカット / Shortcut Keys  
 
 （設定画面からお好みのキーに変更できます / Can be changed in settings）  
 
-- **[Numpad 1]** : 💬 **リプライ (Reply)**  
-    - 返信用モーダルを開く / Open reply modal.  
-- **[Numpad 2]** : 🔁 **リポスト (Repost)**  
-    - リポストを実行 / Perform a Repost.  
-- **[Numpad 3]** : ❤️ **いいね (Like)**  
-    - いいねの登録・解除 / Toggle Like.  
-- **[Numpad 4]** : ✉️ **引用 (Quote)**  
-    - 引用投稿画面を開く / Open quote post composer.  
-- **[Numpad 5]** : 🔖 **ブックマーク (Bookmark)**  
-    - ブックマークの登録・解除 / Toggle Bookmark.  
-- **[Numpad 6]** : ✋🏻 **モデレーション (Moderation)**  
-    - 警告などで隠された画像を表示・非表示 / Show or Hide blurred images.  
+* **[Numpad 1]** : 💬 **リプライ (Reply)**  
+  * 返信用モーダルを開く / Open reply modal.  
+* **[Numpad 2]** : 🔁 **リポスト (Repost)**  
+  * リポストを実行 / Perform a Repost.  
+* **[Numpad 3]** : ❤️ **いいね (Like)**  
+  * いいねの登録・解除 / Toggle Like.  
+* **[Numpad 4]** : ✉️ **引用 (Quote)**  
+  * 引用投稿画面を開く / Open quote post composer.  
+* **[Numpad 5]** : 🔖 **ブックマーク (Bookmark)**  
+  * ブックマークの登録・解除 / Toggle Bookmark.  
+* **[Numpad 6]** : ✋🏻 **モデレーション (Moderation)**  
+  * ラベルで隠された画像を表示・非表示 / Show or Hide blurred images.  
+
+### 🔄 機能の有効化・無効化 / Toggle Features (ON/OFF)  
+
+* **画像の切り替えボタンを大きくする / Enlarge Navigation Buttons**  
+  * ボタンを強調表示し、複数枚の画像があることを視覚的に分かりやすくします  
+    Highlights the buttons to clearly indicate when multiple images are available.  
+* **左右キーでも画像を切り替える / Unified Image Navigation**  
+  * 左右矢印キーに「画像めくり」と「ポスト移動」の両方の役割を割り当て、シームレスな操作を可能にします  
+    Assigns both image and post navigation to the Left/Right arrow keys for a seamless experience.  
 
 ### 🔒 固定の操作 / Fixed System Keys  
 
 （システム予約のため変更できません / Reserved system shortcuts）  
 
-- **[Shift + ← / →]** : 🖼️ **画像を次へ/前へ (Next / Prev Image)**  
-    - 複数枚画像のスライドショー操作 / Slide through multiple images.  
-- **[↑ / ↓]** : 📜 **本文のスクロール (Scroll Text)**  
-    - 長い本文を上下にスクロール / Scroll through long post text.  
+* **[Shift + ← / →]** : 🖼️ **画像を次へ/前へ (Next / Prev Image)**  
+  * 複数枚画像のスライドショー操作 / Slide through multiple images.  
+* **[↑ / ↓]** : 📜 **本文のスクロール (Scroll Text)**  
+  * 長い本文を上下にスクロール / Scroll through long post text.  
 
 ### 💡 特殊操作 / Special Controls  
+
+* **画像とポスト操作の統合 (🆕 v3.9～) / Unified Navigation:**  
+  * 「左右キーでも画像を切り替える」がONの場合  
+    左右キーを押した際、移動方向に「次の画像」が存在すれば画像を切り替え  
+    画像の端（１枚目や最後）に達している場合は隣のポストへ移動します  
+     If enabled, when Left/Right is pressed, it switches images if another one exists in that direction.  
+     It moves to the next/prev post only when you've reached the edge of the current gallery.  
 
 * **親ポストへのリアクション / Reactions to Parent Post**:  
   * `Ctrl` + `設定キー` を押すと、返信元の親ポストに対してアクションを実行します（設定キーにCtrlが含まれていない場合のみ有効）  
     Pressing `Ctrl` + `Shortcut Key` performs the action on the **parent post** instead of the current one. (Active only if the shortcut doesn't already include Ctrl).  
 * **設定の制約 / Configuration Constraints**:  
-  * **システム保護（予約済み）のため**、単体の「↑↓←→」および「Shift+←/→」はカスタムショートカットとして登録できません  
-    **Reserved for system protection**: Standalone Arrow keys (↑↓←→) and Shift+ArrowLeft/Right are reserved and cannot be assigned as custom shortcuts.  
+  * システム予約キー（単体の「↑↓←→」および「Shift+←/→」）はカスタムショートカットとして登録できません  
+    Reserved system keys (Standalone Arrow keys (↑↓←→) and Shift+←/→) cannot be assigned as custom shortcuts.  
 
 ---
 
 ### ✨ インストール方法 / Installation Guide  
 
 * **UserScriptマネージャーをインストール (Install the UserScript manager):**  
-   * **Tampermonkey**: [https://www.tampermonkey.net/](https://www.tampermonkey.net/)  
-   * **ScriptCat**: [https://scriptcat.org/](https://scriptcat.org/)  
+  * **Tampermonkey**: [https://www.tampermonkey.net/](https://www.tampermonkey.net/)  
+  * **ScriptCat**: [https://scriptcat.org/](https://scriptcat.org/)  
 
 * **スクリプトをインストール (Install the script):**  
-   * [Greasy Fork](https://greasyfork.org/ja/scripts/550775) にアクセスし、「インストール」ボタンを押してください  
-     Access and click the "Install" button.  
+  * [Greasy Fork](https://greasyfork.org/ja/scripts/550775) にアクセスし、「インストール」ボタンを押してください  
+    Access and click the "Install" button.  
 
 ---
 
 ## 📝 更新履歴 (Changelog)  
 
-### v3.8 (Current Release)  
+### v3.9 (Current Release)  
+
+✅ 画像の切り替えボタンを大きくする  
+✅ 画像切り替えとポスト切り替えのキー操作を統合  
+
+### v3.8  
+
 ✅ 引用ポストで補完できていなかったパターンがあったのを修正  
 
 ### v3.6  
+
 ✅ **リンクカードのサムネイルプレビューを実装**: 通知カラムのリンクカードが含まれるポストのサムネイルを表示  
 
 ### v3.5  
+
 ✅ **通知カラムの引用リポストのメディアプレビューを実装**: 画像、GIF、動画が通知カラム内でプレビュー可能に  
 
 ### v3.1  
+
 ☑️ 設定UIに「親ポストへの操作」「画像切り替え」「本文のスクロール」の情報を追加  
 
 ### v3.0  
+
 ✅ 親ポストへのリアクションを追加（Ctrl+設定キー）  
 ☑️ その他、軽微な修正  
 
 ### v2.9  
+
 ✅ 英語を追加  
 ✅ 本文のスクロール（ArrowUp/Down）を追加  
 ☑️ 複数画像操作のキーを変更（Shift + ArrowLeft/Right）  
 ☑️ その他、軽微な修正  
 
 ### v2.8  
+
 ✅ 引用一覧のポストの本文クリックでも移動  
 ☑️ GitHubでもリリース  
 
 ### v2.4  
+
 ✅ 複数画像の切り替えに対応  
 
 ### v2.3  
+
 ✅ 「表示する」「隠す」に対応  
 
 ### v2.2  
+
 ✅ キー操作でリアクションできる機能を追加  
 
 ### v1.2  
+
 ✅ 初リリース（GreasyFork）  
 
 ---
@@ -137,24 +181,26 @@ The source code for this application is copyrighted by Neon.
     If you modify or redistribute (fork) this script, you MUST retain the original author's name (Neon) and all credit notations.  
 
 ※ ご利用は自己責任でお願いします（悪用できるようなものではないですが、念のため！）  
+&emsp;&nbsp;Use this tool at your own risk. (Not that it could really be misused, but just to be safe!)  
 
 ---
 
 ## ⚠️ セキュリティ警告 / Security Warning  
 
 🚨 **重要：公式配布について / IMPORTANT: Official Distribution**  
-当プロジェクトの公式スクリプトは、**GitHub または GreasyFork** でのみ公開しています。  
+当プロジェクトの公式スクリプトは、**GitHub または GreasyFork** でのみ公開しています  
 The official script for this project is ONLY available on **GitHub or GreasyFork**.  
 
 🚨 **偽物に注意 / Beware of Fakes**  
-他サイト等で `.zip`, `.exe`, `.cmd` 形式で配布されているものはすべて**偽物**です。  
-これらには**ウイルスやマルウェア**が含まれていることが確認されており、非常に危険です。  
+他サイト等で `.zip`, `.exe`, `.cmd` 形式で配布されているものはすべて**偽物**です  
+これらには**ウイルスやマルウェア**が含まれていることが確認されており、非常に危険です  
 Any distribution in `.zip`, `.exe`, `.cmd` formats on other sites is **FAKE**.  
 These have been confirmed to contain **VIRUSES or MALWARE**.  
 
 ### ⚖️ 法的措置と通報について / Legal Action & Abuse Reports  
-当プロジェクトの制作物に対する無断転載が確認されたため、過去に **DMCA Take-down通知** を送付しています。  
-また、マルウェアを配布する悪質なサイトについては、順次 **各機関へ通報 (Malware / Abuse Report)** を行っています。  
+
+当プロジェクトの制作物に対する無断転載が確認されたため、過去に **DMCA Take-down通知** を送付しています  
+また、マルウェアを配布する悪質なサイトについては、順次 **各機関へ通報 (Malware / Abuse Report)** を行っています  
 We have filed **DMCA Take-down notices** against unauthorized re-uploads of my projects.  
 Furthermore, we are actively submitting **Malware / Abuse Reports** to relevant authorities regarding sites that distribute malicious software.  
 
@@ -190,6 +236,7 @@ Furthermore, we are actively submitting **Malware / Abuse Reports** to relevant 
 <img src="https://www.google.com/s2/favicons?domain=github.com&size=16" alt="GitHub icon"> GitHub        :<a href="https://github.com/neon-aiart/">https://github.com/neon-aiart/</a>
 <img src="https://neon-aiart.github.io/favicon.ico" alt="neon-aiart icon" width="16" height="16"> GitHub Pages  :<a href="https://neon-aiart.github.io/">https://neon-aiart.github.io/</a>
 <img src="https://www.google.com/s2/favicons?domain=greasyfork.org&size=16" alt="Greasy Fork icon"> Greasy Fork   :<a href="https://greasyfork.org/ja/users/1494762/">https://greasyfork.org/ja/users/1494762/</a>
+<img src="https://www.google.com/s2/favicons?domain=zenn.dev&size=16" alt="Sizu icon"> Zenn Dev      :<a href="https://zenn.dev/neon_aiart/">https://zenn.dev/neon_aiart/</a>
 <img src="https://www.google.com/s2/favicons?domain=sizu.me&size=16" alt="Sizu icon"> Sizu Diary    :<a href="https://sizu.me/neon_aiart/">https://sizu.me/neon_aiart/</a>
 <img src="https://www.google.com/s2/favicons?domain=ofuse.me&size=16" alt="Ofuse icon"> Ofuse         :<a href="https://ofuse.me/neon/">https://ofuse.me/neon/</a>
 <img src="https://www.google.com/s2/favicons?domain=www.chichi-pui.com&size=16" alt="chichi-pui icon"> chichi-pui    :<a href="https://www.chichi-pui.com/users/neon/">https://www.chichi-pui.com/users/neon/</a>
