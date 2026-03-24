@@ -108,6 +108,29 @@ These are only active while the MediaView is open.
 
 ---
 
+### 📺 紹介動画 (Overview Video)  
+
+<p align="center"><a href="https://youtu.be/9d8T88Ny5uc" markdown="1">
+    <img src="https://img.youtube.com/vi/9d8T88Ny5uc/maxresdefault.jpg" alt="Tokimeki MediaView Fix Plus Overview" style="width:100%; max-width:600px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.2);"><br />
+    ▶️ クリックしてYouTubeで再生 (Click to play on YouTube)
+</a></p>  
+
+## 🎨 インフォグラフィック (Infographic)  
+
+<details><summary>
+    🇯🇵 日本語版を表示 (View Japanese Version)
+</summary>
+<img src="tokimeki-media-view-fix-info-jp.png" alt="Infographic JP" width="100%">
+</details>
+
+<details><summary>
+    🇺🇸 English Version (View English Version)
+</summary>
+<img src="tokimeki-media-view-fix-info-en.png" alt="Infographic EN" width="100%">
+</details>
+
+---
+
 ## 📝 更新履歴 (Changelog)  
 
 ### v3.9 (Current Release)  
