@@ -84,8 +84,8 @@ These are only active while the MediaView is open.
   * 「左右キーでも画像を切り替える」がONの場合  
     左右キーを押した際、移動方向に「次の画像」が存在すれば画像を切り替え  
     画像の端（１枚目や最後）に達している場合は隣のポストへ移動します  
-     If enabled, when Left/Right is pressed, it switches images if another one exists in that direction.  
-     It moves to the next/prev post only when you've reached the edge of the current gallery.  
+    If enabled, when Left/Right is pressed, it switches images if another one exists in that direction.  
+    It moves to the next/prev post only when you've reached the edge of the current gallery.  
 
 * **親ポストへのリアクション / Reactions to Parent Post**:  
   * `Ctrl` + `設定キー` を押すと、返信元の親ポストに対してアクションを実行します（設定キーにCtrlが含まれていない場合のみ有効）  
@@ -257,7 +257,7 @@ Furthermore, we are actively submitting **Malware / Abuse Reports** to relevant 
 <pre>
 <img src="https://www.google.com/s2/favicons?domain=bsky.app&size=16" alt="Bluesky icon"> Bluesky       :<a href="https://bsky.app/profile/neon-ai.art/">https://bsky.app/profile/neon-ai.art/</a>
 <img src="https://www.google.com/s2/favicons?domain=github.com&size=16" alt="GitHub icon"> GitHub        :<a href="https://github.com/neon-aiart/">https://github.com/neon-aiart/</a>
-<img src="https://neon-aiart.github.io/favicon.ico" alt="neon-aiart icon" width="16" height="16"> GitHub Pages  :<a href="https://neon-aiart.github.io/">https://neon-aiart.github.io/</a>
+<img src="https://neon-aiart.github.io/favicon.ico" alt="neon-aiart icon" height="16"> GitHub Pages  :<a href="https://neon-aiart.github.io/">https://neon-aiart.github.io/</a>
 <img src="https://www.google.com/s2/favicons?domain=greasyfork.org&size=16" alt="Greasy Fork icon"> Greasy Fork   :<a href="https://greasyfork.org/ja/users/1494762/">https://greasyfork.org/ja/users/1494762/</a>
 <img src="https://www.google.com/s2/favicons?domain=zenn.dev&size=16" alt="Sizu icon"> Zenn Dev      :<a href="https://zenn.dev/neon_aiart/">https://zenn.dev/neon_aiart/</a>
 <img src="https://www.google.com/s2/favicons?domain=sizu.me&size=16" alt="Sizu icon"> Sizu Diary    :<a href="https://sizu.me/neon_aiart/">https://sizu.me/neon_aiart/</a>
