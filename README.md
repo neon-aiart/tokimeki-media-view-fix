@@ -133,6 +133,17 @@ These are only active while the MediaView is open.
 
 ## 📝 更新履歴 (Changelog)  
 
+### v4.0 and later (Upcoming Tasks)  
+
+* [ ] メディアビューでサムネイル表示  
+* [ ] 隠してる状態で複数画像の切り替えをしない  
+* [ ]  
+* [ ]  
+* [ ]  
+* [ ]  
+
+Work in Progress...  
+
 ### v3.9 (Current Release)  
 
 ✅ 画像の切り替えボタンを大きくする  
