@@ -137,8 +137,8 @@ These are only active while the MediaView is open.
 
 * [ ] メディアビューでサムネイル表示  
 * [ ] 隠してる状態で複数画像の切り替えをしない  
-* [ ]  
-* [ ]  
+* [ ] DID copy を統合  
+* [ ] bsky tokimeki switcher を統合  
 * [ ]  
 * [ ]  
 
