@@ -135,8 +135,7 @@ These are only active while the MediaView is open.
 
 ### v4.0 and later (Upcoming Tasks)  
 
-* [ ] メディアビューでサムネイル表示  
-* [ ] 隠してる状態で複数画像の切り替えをしない  
+* [ ] 予約投稿の画像を取得  
 * [ ] DID copy を統合  
 * [ ] bsky tokimeki switcher を統合  
 * [ ]  
@@ -148,6 +147,7 @@ Work in Progress...
 ☑️ 通知カラムの表示されていないメディアの追加でm3u8形式の動画に対応  
 ☑️ メディアビューの画像切り替えで画像が隠れているときはポスト切り替えに変更  
 ☑️ メディアビューで左右キーでポスト＆画像切替ONのときに簡易ガイドを追加  
+✅ メディアビューで画像が複数枚あるときにサムネイルを表示  
 
 ### v3.9 (Current Release)  
 

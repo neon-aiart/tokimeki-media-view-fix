@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Tokimeki MediaView Fix Plus
 // @icon           data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌈</text></svg>
-// @version        4.0-dev3
+// @version        4.0-dev4
 // @description    Enables navigating to individual post pages by clicking on the body or quote source in TOKIMEKI's "Media" style. Also adds keyboard shortcuts for reactions.
 // @description:ja TOKIMEKIの「メディア」スタイルで投稿の本文や引用元をクリックした際に、その投稿の個別ページに移動できるようにします。また、キーボードショートカットでリアクション操作ができるようになります。
 // @author         ねおん
@@ -40,7 +40,7 @@
 (function() {
     'use strict';
 
-    const VERSION = '4.0-dev3';
+    const VERSION = '4.0-dev4';
     const STORE_KEY = 'tokimeki_media_fix_shortcuts';
 
     // スタイル定義（GM_addStyle）
@@ -416,7 +416,6 @@
         if (!config.unifiedSlideKey) {
             return;
         }
-        console.log('Refresh');
 
         const contentArea = dialog.querySelector('.media-content__content');
         const timelineItem = contentArea?.querySelector('article.timeline__item');
@@ -427,13 +426,68 @@
         // 警告コンテナの状態をチェック
         const warnContainer = dialog.querySelector('.media-content__image .timeline-warn');
         const isHiding = warnContainer && warnContainer.style.display !== 'none' && warnContainer.offsetParent !== null;
-        const totalSlides = dialog.querySelectorAll('.embla__slide').length;
+
+        // ダイアログ内の全スライド（画像要素）を取得
+        const slides = dialog.querySelectorAll('.embla__slide');
+        const totalSlides = slides.length;
 
         // １枚以下、または警告で隠れているときはガイドを非表示にする
         if (totalSlides <= 1 || isHiding) {
             dialog.querySelector('.slide-key-guide')?.remove();
+            dialog.querySelector('.slide-thumbnail-bar')?.remove();
             return;
         }
+
+        // ==========================================
+        // 【大物】サムネイルバーの生成・更新処理
+        // ==========================================
+        let thumbBar = dialog.querySelector('.slide-thumbnail-bar');
+        if (!thumbBar) {
+            thumbBar = document.createElement('div');
+            thumbBar.className = 'slide-thumbnail-bar';
+            thumbBar.style.cssText = 'display: flex; gap: 6px; margin: 12px 0; padding: 4px 0; overflow-x: auto;';
+
+            // 本文（.timeline-warn-wrap）の後ろ、リアクションの前に挿入する
+            const textWrap = timelineItem.querySelector('.timeline-warn-wrap');
+            if (textWrap) {
+                textWrap.after(thumbBar);
+            } else {
+                timelineItem.appendChild(thumbBar); // 万が一のフォールバック
+            }
+        }
+
+        // 現在何枚目かを取得
+        const currentIndex = getCurrentSlideIndex(dialog);
+
+        // サムネイルの中身を構築
+        thumbBar.innerHTML = '';
+        slides.forEach((slide, index) => {
+            const imgNode = slide.querySelector('img');
+            if (!imgNode) {
+                return;
+            }
+
+            // サムネイル用のミニ画像枠を作成
+            const thumb = document.createElement('div');
+            thumb.className = `neon-thumb-item ${index === currentIndex ? 'active' : ''}`;
+
+            // スタイル（フェードアウトと枠線強調のまま）
+            thumb.style.cssText = `
+                width: 50px;
+                height: 50px;
+                border-radius: 4px;
+                overflow: hidden;
+                cursor: pointer;
+                border: 2px solid ${index === currentIndex ? 'var(--primary-color)' : 'transparent'};
+                opacity: ${index === currentIndex ? '1' : '0.5'};
+                transition: all 0.15s ease;
+                background-image: url("${imgNode.src}");
+                background-size: cover;
+                background-position: center;
+            `;
+
+            thumbBar.appendChild(thumb);
+        });
 
         // 古いシンプルなガイドがもし残っていたら削除
         dialog.querySelectorAll('.slide-key-guide').forEach(el => el.remove());
@@ -447,11 +501,10 @@
             timelineItem.after(guideEl);
         }
 
-        // 現在の枚数から３分岐ロジックでテキストを生成
-        const currentIndex = getCurrentSlideIndex(dialog);
         let leftText = '';
         let rightText = '';
 
+        // 現在の枚数から３分岐ロジックでテキストを生成
         if (currentIndex === 0) {
             leftText = 'Ctrl + ← / ←: 前ポスト<br>Shift + ←: 最後の画像';
             rightText = 'Ctrl + →: 次ポスト<br>Shift + → / →: 次画像';
