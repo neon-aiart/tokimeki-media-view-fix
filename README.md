@@ -1,4 +1,4 @@
-# 🌈 Tokimeki MediaView Fix Plus v3.9  
+# 🌈 Tokimeki MediaView Fix Plus v4.0  
 
 Blueskyクライアント "Tokimeki" における、メディアビューの修正に加え、**通知カラムでの画像・動画プレビュー機能**、そしてキーボード操作による快適な閲覧体験を追加する強力なUserScriptです  
 
