@@ -139,7 +139,7 @@ These are only active while the MediaView is open.
 * [ ] 隠してる状態で複数画像の切り替えをしない  
 * [ ] DID copy を統合  
 * [ ] bsky tokimeki switcher を統合  
-* [ ]  
+* [ ] 通知カラムの動画の表示を修正  
 * [ ]  
 
 Work in Progress...  
