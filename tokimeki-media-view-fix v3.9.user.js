@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Tokimeki MediaView Fix Plus
 // @icon           data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌈</text></svg>
-// @version        3.9
+// @version        4.0-dev
 // @description    Enables navigating to individual post pages by clicking on the body or quote source in TOKIMEKI's "Media" style. Also adds keyboard shortcuts for reactions.
 // @description:ja TOKIMEKIの「メディア」スタイルで投稿の本文や引用元をクリックした際に、その投稿の個別ページに移動できるようにします。また、キーボードショートカットでリアクション操作ができるようになります。
 // @author         ねおん
@@ -37,7 +37,7 @@
 (function() {
     'use strict';
 
-    const VERSION = '3.9';
+    const VERSION = '4.0-dev';
     const STORE_KEY = 'tokimeki_media_fix_shortcuts';
 
     // スタイル定義（GM_addStyle）
