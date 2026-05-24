@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Tokimeki MediaView Fix Plus
 // @icon           data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌈</text></svg>
-// @version        4.0-dev1
+// @version        4.0-dev2
 // @description    Enables navigating to individual post pages by clicking on the body or quote source in TOKIMEKI's "Media" style. Also adds keyboard shortcuts for reactions.
 // @description:ja TOKIMEKIの「メディア」スタイルで投稿の本文や引用元をクリックした際に、その投稿の個別ページに移動できるようにします。また、キーボードショートカットでリアクション操作ができるようになります。
 // @author         ねおん
@@ -40,7 +40,7 @@
 (function() {
     'use strict';
 
-    const VERSION = '4.0-dev1';
+    const VERSION = '4.0-dev2';
     const STORE_KEY = 'tokimeki_media_fix_shortcuts';
 
     // スタイル定義（GM_addStyle）
@@ -257,9 +257,19 @@
             }
         }
 
+        // 警告コンテナ（「表示する」ボタンの親）
+        const warnContainer = dialog.querySelector('.media-content__image .timeline-warn');
+
         // 画像切り替えとポスト切り替えの統合（左右キーで画像切り替えもするオプションが有効な場合）
         if (config.unifiedSlideKey) {
             if (currentPressedKey === 'ArrowRight' || currentPressedKey === 'ArrowLeft') {
+                // 【追加】警告コンテナ（画像が隠されている状態）がアクティブかどうかをチェック
+                const isHiding = warnContainer && warnContainer.style.display !== 'none' && warnContainer.offsetParent !== null;
+                // 画像が隠されている状態なら、画像の移動処理を完全にスルーしてTOKIMEKIのポスト移動に任せる
+                if (isHiding) {
+                    return; // 何もしないでスルーすることで、TOKIMEKI本体が次のポストへ飛ばしてくれる
+                }
+
                 const currentIndex = getCurrentSlideIndex(dialog);
                 const totalSlides = dialog.querySelectorAll('.embla__slide').length;
 
@@ -331,8 +341,7 @@
                 return;
             }
 
-            // 警告コンテナ（「表示する」ボタンの親）と非表示化コンテナ（「隠す」ボタンの親）
-            const warnContainer = postContainer.querySelector('.media-content__image .timeline-warn');
+            // 非表示化コンテナ（「隠す」ボタンの親）
             const hidingContainer = postContainer.querySelector('.media-content__image .timeline-warn-hiding');
 
             let targetButton = null;
@@ -1081,9 +1090,8 @@
                     // ブラウザがネイティブでm3u8をサポートしている場合（Safariなど）
                     if (videoEl.canPlayType('application/vnd.apple.mpegurl')) {
                         videoEl.src = videoUrl;
-                    }
-                    // Hls.jsが利用可能な場合（Chrome, Edge, Firefoxなど）
-                    else if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+                    } else if (typeof Hls !== 'undefined' && Hls.isSupported()) {
+                        // Hls.jsが利用可能な場合（Chrome, Edge, Firefoxなど）
                         const hls = new Hls();
                         hls.loadSource(videoUrl);
                         hls.attachMedia(videoEl);
