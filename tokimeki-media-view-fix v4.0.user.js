@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name           Tokimeki MediaView Fix Plus
 // @icon           data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌈</text></svg>
-// @version        4.0-dev2
+// @version        4.0-dev3
 // @description    Enables navigating to individual post pages by clicking on the body or quote source in TOKIMEKI's "Media" style. Also adds keyboard shortcuts for reactions.
 // @description:ja TOKIMEKIの「メディア」スタイルで投稿の本文や引用元をクリックした際に、その投稿の個別ページに移動できるようにします。また、キーボードショートカットでリアクション操作ができるようになります。
 // @author         ねおん
@@ -40,7 +40,7 @@
 (function() {
     'use strict';
 
-    const VERSION = '4.0-dev2';
+    const VERSION = '4.0-dev3';
     const STORE_KEY = 'tokimeki_media_fix_shortcuts';
 
     // スタイル定義（GM_addStyle）
@@ -263,7 +263,7 @@
         // 画像切り替えとポスト切り替えの統合（左右キーで画像切り替えもするオプションが有効な場合）
         if (config.unifiedSlideKey) {
             if (currentPressedKey === 'ArrowRight' || currentPressedKey === 'ArrowLeft') {
-                // 【追加】警告コンテナ（画像が隠されている状態）がアクティブかどうかをチェック
+                // 警告コンテナ（画像が隠されている状態）がアクティブかどうかをチェック
                 const isHiding = warnContainer && warnContainer.style.display !== 'none' && warnContainer.offsetParent !== null;
                 // 画像が隠されている状態なら、画像の移動処理を完全にスルーしてTOKIMEKIのポスト移動に任せる
                 if (isHiding) {
@@ -410,6 +410,61 @@
             }, 150);
         }
     }, true);
+
+    // メディアビュー内のガイドを更新する関数
+    function refreshSlideKeyGuide(dialog) {
+        if (!config.unifiedSlideKey) {
+            return;
+        }
+        console.log('Refresh');
+
+        const contentArea = dialog.querySelector('.media-content__content');
+        const timelineItem = contentArea?.querySelector('article.timeline__item');
+        if (!timelineItem) {
+            return;
+        }
+
+        // 警告コンテナの状態をチェック
+        const warnContainer = dialog.querySelector('.media-content__image .timeline-warn');
+        const isHiding = warnContainer && warnContainer.style.display !== 'none' && warnContainer.offsetParent !== null;
+        const totalSlides = dialog.querySelectorAll('.embla__slide').length;
+
+        // １枚以下、または警告で隠れているときはガイドを非表示にする
+        if (totalSlides <= 1 || isHiding) {
+            dialog.querySelector('.slide-key-guide')?.remove();
+            return;
+        }
+
+        // 古いシンプルなガイドがもし残っていたら削除
+        dialog.querySelectorAll('.slide-key-guide').forEach(el => el.remove());
+
+        // 枠がなければ作る
+        let guideEl = dialog.querySelector('.slide-key-guide');
+        if (!guideEl) {
+            guideEl = document.createElement('div');
+            guideEl.className = 'slide-key-guide';
+            guideEl.style.cssText = 'margin-top: 12px; padding: 8px 12px; background: var(--bg-color-2); border: 1px solid var(--border-color-1); border-radius: 6px; font-size: 11px; color: var(--text-color-3); display: flex; justify-content: space-between; gap: 8px; font-family: monospace;';
+            timelineItem.after(guideEl);
+        }
+
+        // 現在の枚数から３分岐ロジックでテキストを生成
+        const currentIndex = getCurrentSlideIndex(dialog);
+        let leftText = '';
+        let rightText = '';
+
+        if (currentIndex === 0) {
+            leftText = 'Ctrl + ← / ←: 前ポスト<br>Shift + ←: 最後の画像';
+            rightText = 'Ctrl + →: 次ポスト<br>Shift + → / →: 次画像';
+        } else if (currentIndex === totalSlides - 1) {
+            leftText = 'Ctrl + ←: 前ポスト<br>Shift + ← / ←: 前画像';
+            rightText = 'Ctrl + → / →: 次ポスト<br>Shift + →: 最初の画像';
+        } else {
+            leftText = 'Ctrl + ←: 前ポスト<br>Shift + ← / ←: 前画像';
+            rightText = 'Ctrl + →: 次ポスト<br>Shift + → / →: 次画像';
+        }
+
+        guideEl.innerHTML = `<span>${leftText}</span><span style="text-align:right;">${rightText}</span>`;
+    }
 
     // ========= 設定UI =========
     function ensureStyle() {
@@ -1152,14 +1207,49 @@
 
                 notificationsItems.forEach(item => fetchAndInjectImage(item));
 
-                /*
                 // MediaViewのmutationを監視
                 const mediaContentWraps = node.matches('dialog.media-content-wrap')
                     ? [node,]
                     : node.querySelectorAll('dialog.media-content-wrap');
 
-                mediaContentWraps.forEach(item => dialogOpenMediaView(item));
-                */
+                mediaContentWraps.forEach(item => {
+                    // console.log('[DEBUG] ダイアログ検出');
+
+                    // 要素が配置し終わるのを少し待ってからすべてを登録する
+                    setTimeout(() => {
+                        // console.log('[DEBUG] 初期表示実行');
+                        // ① 初期表示
+                        refreshSlideKeyGuide(item);
+
+                        // ② 【新アプローチ】左右のナビゲーションボタンのクリックを監視する
+                        const prevBtn = item.querySelector('.embla__prev');
+                        const nextBtn = item.querySelector('.embla__next');
+
+                        // ガイドを更新する共通の処理（スライドの移動時間を考慮して250ms待つ）
+                        const triggerUpdate = () => {
+                            // console.log('[DEBUG] 画像がめくられたのでガイドを更新します');
+                            setTimeout(() => refreshSlideKeyGuide(item), 250);
+                        };
+
+                        if (prevBtn) {
+                            // console.log('[DEBUG] 左ボタン監視登録');
+                            prevBtn.addEventListener('click', triggerUpdate);
+                        }
+                        if (nextBtn) {
+                            // console.log('[DEBUG] 右ボタン監視登録');
+                            nextBtn.addEventListener('click', triggerUpdate);
+                        }
+                    }, 150);
+
+                    // ③ マウスで「表示する」ボタンをクリックした時のための監視
+                    item.addEventListener('click', (e) => {
+                        if (e.target.closest('.timeline-warn-button button')) {
+                            // console.log('[DEBUG] 警告解除ボタンクリック');
+                            setTimeout(() => refreshSlideKeyGuide(item), 150);
+                        }
+                    });
+                    // console.log('[DEBUG] リスナー登録フェーズ終了');
+                });
             });
         }
     });
